@@ -107,7 +107,7 @@ else:
         eprint(f"ERROR: Default category {DEFAULT_CAT} does not exist.")
         exit(1)
 
-    TIME_FORMAT = key("time_format",d="%Y-%M-%d_T%H:%M:%S") # use standard strftime parameters
+    TIME_FORMAT = key("time_format",d="%Y-%m-%d_T%H:%M:%S") # use standard strftime parameters
 
     ENTRY_FILENAME_FORMAT = key("entry_filename_format","time","title",d="{time}_{title}.md") # time, title
 
