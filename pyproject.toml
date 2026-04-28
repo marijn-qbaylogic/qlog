@@ -1,0 +1,27 @@
+[project]
+name = "qlog"
+version = "2026.4.28"
+requires-python = ">= 3.8"
+dependencies = [
+#    "os",
+#    "re",
+#    "sys",
+#    "time",
+#    "functools",
+#    "collections",
+#    "subprocess",
+#    "unicodedata",
+    "requests",
+#    "json",
+    "PyYAML",
+#    "lxml",
+]
+authors = [
+    {name = "Marijn Adriaanse", email = "marijn@qbaylogic.com"},
+]
+maintainers = [
+    {name = "Marijn Adriaanse", email = "marijn@qbaylogic.com"},
+]
+
+[project.scripts]
+qlog = "qlog.cli:app"
