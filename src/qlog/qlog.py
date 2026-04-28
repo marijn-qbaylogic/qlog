@@ -96,6 +96,7 @@ def collect(version=None, date=None, delete=False, skip_on_error=False, out=None
 
     if version is None:
         version = "<version>"
+        eprint("WARN: Version not supplied! Replace the title placeholder manually.")
     if date is None:
         date = time.strftime(DATE_FORMAT)
 
