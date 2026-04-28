@@ -1,6 +1,6 @@
-
+import functools
 import requests
-import lxml
+import lxml.html
 
 from .util import *
 from .config import *

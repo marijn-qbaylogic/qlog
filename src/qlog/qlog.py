@@ -2,7 +2,6 @@ import re
 import os
 import sys
 import time
-import functools
 import subprocess
 import requests
 
@@ -14,6 +13,7 @@ from collections import defaultdict
 from .util import *
 from .config import *
 from .entry import *
+from .github import *
 
 def make_entry(title=None, issues=None, cat=None, contents=None, interactive=True):
     if title is None:
@@ -173,7 +173,7 @@ def collect(version=None, date=None, delete=False, skip_on_error=False, out=None
                     eprint(f"ERROR: Could not write file {prepend}: {e}")
                     error = True
                 else:
-                    eprint("Prepended to {prepend}")
+                    eprint(f"Prepended to {prepend}")
         if not append is None:
             try:
                 with open(append,"r") as fp:
@@ -189,7 +189,7 @@ def collect(version=None, date=None, delete=False, skip_on_error=False, out=None
                     eprint(f"ERROR: Could not write file {append}: {e}")
                     error = True
                 else:
-                    eprint("Appended to {append}")
+                    eprint(f"Appended to {append}")
         if not insert is None:
             try:
                 with open(insert,"r") as fp:
@@ -198,7 +198,7 @@ def collect(version=None, date=None, delete=False, skip_on_error=False, out=None
                 eprint(f"ERROR: Could not read file {insert}: {e}")
                 error = True
             else:
-                m = re.search(INSERT_BEFORE_PATTERN,txt)
+                m = re.search(INSERT_BEFORE_PATTERN,txt,re.MULTILINE)
                 if m:
                     i = m.span()[0]
                     txt = txt[:i]+res+"\n"+txt[i:]
@@ -210,7 +210,7 @@ def collect(version=None, date=None, delete=False, skip_on_error=False, out=None
                         eprint(f"ERROR: Could not write file {insert}: {e}")
                         error = True
                     else:
-                        eprint("Inserted into {insert}")
+                        eprint(f"Inserted into {insert}")
                 else:
                     eprint("ERROR: Could not find insertion point")
                     error = True
@@ -329,7 +329,7 @@ def github(post_issues=False, post_prs=False, lst=False, version=None, out=None,
             for blame_line in blame_lines:
                 commit = blame_line.split()[0].decode()
                 if not (pr:=get_pr(commit)) is None:
-                    prs.extend(pr)
+                    prs.add(pr)
         prs = sorted(list(prs))
 
     # only list pr/issue numbers that have been collected

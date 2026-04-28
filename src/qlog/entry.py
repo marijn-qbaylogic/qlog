@@ -2,6 +2,7 @@
 import re
 
 from .util import *
+from .config import *
 
 class Entry:
     def __init__(self, path, contents, issues):
@@ -25,8 +26,8 @@ class Entry:
             m = ENTRY_PATTERN.fullmatch(entry_text)
             meta = m.group(1)
             contents = m.group(2)
-        except:
-            eprint(f"ERROR: Could not find metadata section in {fname}")
+        except Exception as e:
+            eprint(f"ERROR: Could not find metadata section in {path}: {e}")
             return
         
         # extract issues

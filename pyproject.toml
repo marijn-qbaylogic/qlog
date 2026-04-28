@@ -14,7 +14,8 @@ dependencies = [
     "requests",
 #    "json",
     "PyYAML",
-#    "lxml",
+    "lxml",
+    "cssselect",
 ]
 authors = [
     {name = "Marijn Adriaanse", email = "marijn@qbaylogic.com"},
