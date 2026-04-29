@@ -24,18 +24,35 @@ def make_entry(title=None, issues=None, cat=None, contents=None, interactive=Tru
                 title = clean_string(title).lower()
                 if not "n" in input(f"Confirm title \"{title}\" [Y/n]: ").lower():
                     break
+
     if issues is None:
         issues = []
         if interactive:
             while True:
                 issues = input("Related issues: ")
                 issues = [int(i) for i in re.split(r"[\s,;]+",issues) if i.isnumeric()]
+                eprint(f"Issues: {issues}")
                 if issues:
-                    if not "n" in input(f"Confirm issues {issues} [Y/n]:").lower():
-                        break
+                    issues_ok = True
+                    for i in issues:
+                        eprint(f"{i}: ",end="")
+                        result = subprocess.run(GH_ISSUE_TITLE_CMD.format(issue=i), shell=True, capture_output=True)
+                        if result.returncode:
+                            eprint(result.stderr.decode().strip())
+                            issues_ok = False
+                        else:
+                            eprint(result.stdout.decode().strip())
+
+                    if issues_ok:
+                        if not "n" in input("Confirm issues [Y/n]:").lower():
+                            break
+                    else:
+                        if "y" in input(f"Are you absolutely sure you want to keep the issue list as-is? [y/N]: ").lower():
+                            break
                 else:
-                    if "y" in input("Are you absolutely sure you do not want to link any issues? [y/N]:").lower():
+                    if "y" in input("Are you absolutely sure you do not want to link any issues? [y/N]: ").lower():
                         break
+
     if cat is None:
         cat = "<category>"
         if interactive:

@@ -75,6 +75,8 @@ else:
     GH_ISSUE_MESSAGE = key("gh_issue_message","project","version",d="We've released [v{version}](https://github.com/{project}/releases/tag/v{version}), which includes a fix for this issue.") # version, project
     GH_PR_MESSAGE    = key("gh_pr_message"   ,"project","version",d="We've released [v{version}](https://github.com/{project}/releases/tag/v{version}), which includes this PR.") # version, project
 
+    GH_ISSUE_TITLE_CMD = key("gh_issue_title_cmd","issue",d="""gh issue view {issue} --json title,url -q 'if .url | contains("pull") then error("[PR] "+.title) else .title end'""") # issue
+
     GH_ISSUE_CMD = key("gh_issue_cmd","issue","issue_url","message_string",d="gh issue comment {issue_url} -b {message_string}") # issue, issue_url, message_string
     GH_PR_CMD    = key("gh_pr_cmd"   ,"pr"   ,"pr_url"   ,"message_string",d="gh pr comment {pr_url} -b {message_string}") # pr, pr_url, message_string
 
