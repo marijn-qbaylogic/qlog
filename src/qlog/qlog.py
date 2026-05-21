@@ -36,7 +36,7 @@ def make_entry(title=None, issues=None, cat=None, contents=None, interactive=Tru
                     issues_ok = True
                     for i in issues:
                         eprint(f"{i}: ",end="")
-                        result = subprocess.run(GH_ISSUE_TITLE_CMD.format(issue=i), shell=True, capture_output=True)
+                        result = subprocess.run(C.GH_ISSUE_TITLE_CMD.format(issue=i), shell=True, capture_output=True)
                         if result.returncode:
                             eprint(result.stderr.decode().strip())
                             issues_ok = False
@@ -56,7 +56,7 @@ def make_entry(title=None, issues=None, cat=None, contents=None, interactive=Tru
     if cat is None:
         cat = "<category>"
         if interactive:
-            available = sorted(list(DEFAULT_CATS.keys())+["CUSTOM"],key=lambda c: CATS[c]["rank"])
+            available = sorted(list(C.DEFAULT_CATS.keys())+["CUSTOM"],key=lambda c: C.CATS[c]["rank"])
             cats = "/".join(f"{i}:{available[i]}" for i in range(len(available)))
             while True:
                 cat = input(f"Category ({cats}): ").upper()
@@ -97,9 +97,9 @@ def make_entry(title=None, issues=None, cat=None, contents=None, interactive=Tru
                     lines.append(input("> "))
                 contents = "\n".join(lines[:-N])
 
-    timestamp = time.strftime(TIME_FORMAT)
+    timestamp = time.strftime(C.TIME_FORMAT)
 
-    fname = ENTRY_FILENAME_FORMAT.format(title=title,time=timestamp,cat=cat,issues=issues)
+    fname = C.ENTRY_FILENAME_FORMAT.format(title=title,time=timestamp,cat=cat,issues=issues)
     
     with open(os.path.join(ENTRY_DIR,fname),"w") as fp:
         fp.write(ENTRY_TEMPLATE.format(issues=issues,cat=cat,contents=contents))
@@ -115,7 +115,7 @@ def collect(version=None, date=None, delete=False, skip_on_error=False, out=None
         version = "<version>"
         eprint("WARN: Version not supplied! Replace the title placeholder manually.")
     if date is None:
-        date = time.strftime(DATE_FORMAT)
+        date = time.strftime(C.DATE_FORMAT)
 
     entry_files = get_entries(ENTRY_DIR)
     entry_files.sort()
@@ -141,21 +141,21 @@ def collect(version=None, date=None, delete=False, skip_on_error=False, out=None
             exit(1)
 
     # restore default names
-    for cat in DEFAULT_CATS.keys():
-        cat_names[cat] = DEFAULT_CATS[cat]["title"]
+    for cat in C.DEFAULT_CATS.keys():
+        cat_names[cat] = C.DEFAULT_CATS[cat]["title"]
 
     # sort categories
     cat_blobs = list(cat_blobs.items())
-    cat_blobs.sort(key=lambda c: CATS[c[0]]["rank"])
+    cat_blobs.sort(key=lambda c: C.CATS[c[0]]["rank"])
 
     # generate output
 
-    res = [TITLE_FORMAT.format(version=version, date=date),""]
+    res = [C.TITLE_FORMAT.format(version=version, date=date),""]
     
     for cat,blobs in cat_blobs:
-        if len(blobs)>1 or CATS[cat]["itemize"] or not CATS[cat]["notitle"]:
-            res.append(HEADER_FORMAT.format(cat = cat_names[cat]))
-        if len(blobs)==1 and not CATS[cat]["itemize"]:
+        if len(blobs)>1 or C.CATS[cat]["itemize"] or not C.CATS[cat]["notitle"]:
+            res.append(C.HEADER_FORMAT.format(cat = cat_names[cat]))
+        if len(blobs)==1 and not C.CATS[cat]["itemize"]:
             res.append(blobs[0])
         else:
             res.extend([item(blob) for blob in blobs])
@@ -216,7 +216,7 @@ def collect(version=None, date=None, delete=False, skip_on_error=False, out=None
                 eprint(f"ERROR: Could not read file {insert}: {e}")
                 error = True
             else:
-                m = re.search(INSERT_BEFORE_PATTERN,txt,re.MULTILINE)
+                m = re.search(C.INSERT_BEFORE_PATTERN,txt,re.MULTILINE)
                 if m:
                     i = m.span()[0]
                     txt = txt[:i]+res+"\n"+txt[i:]
@@ -306,9 +306,9 @@ def github(post_issues=False, post_prs=False, lst=False, version=None, out=None,
     if not lst and version is None:
         try:
             if post_issues:
-                GH_ISSUE_MESSAGE.format()
+                C.GH_ISSUE_MESSAGE.format()
             if post_prs:
-                GH_PR_MESSAGE.format()
+                C.GH_PR_MESSAGE.format()
         except KeyError as e:
             eprint(f"ERROR: Failed to render GitHub message (please provide the version number!): {repr(e)}")
             exit(1)
@@ -365,16 +365,16 @@ def github(post_issues=False, post_prs=False, lst=False, version=None, out=None,
     # generate commands
     commands = []
     if post_issues:
-        message_string = json.dumps(GH_ISSUE_MESSAGE.format(version=version,project=PROJECT))
+        message_string = json.dumps(C.GH_ISSUE_MESSAGE.format(version=version,project=C.PROJECT))
         for issue in issues:
-            url = ISSUE_URL.format(issue=issue,project=PROJECT)
-            cmd = GH_ISSUE_CMD.format(issue_url=url, message_string=message_string)
+            url = C.ISSUE_URL.format(issue=issue,project=C.PROJECT)
+            cmd = C.GH_ISSUE_CMD.format(issue_url=url, message_string=message_string)
             commands.append(cmd)
     if post_prs:
-        message_string = json.dumps(GH_PR_MESSAGE.format(version=version,project=PROJECT))
+        message_string = json.dumps(C.GH_PR_MESSAGE.format(version=version,project=C.PROJECT))
         for pr in prs:
-            url = PR_URL.format(pr=pr,project=PROJECT)
-            cmd = GH_PR_CMD.format(pr_url=url, message_string=message_string)
+            url = C.PR_URL.format(pr=pr,project=C.PROJECT)
+            cmd = C.GH_PR_CMD.format(pr_url=url, message_string=message_string)
             commands.append(cmd)
 
     res = "\n".join(commands)+"\n"

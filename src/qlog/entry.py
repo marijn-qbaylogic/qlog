@@ -52,12 +52,12 @@ class Entry:
         return Entry(path, contents, issues)
 
     def parse(self):
-        issue_links = " ".join([MD_ISSUE_LINK.format(issue=issue, issue_url=ISSUE_URL.format(issue=issue,project=PROJECT)) for issue in self.issues])
+        issue_links = " ".join([C.MD_ISSUE_LINK.format(issue=issue, issue_url=C.ISSUE_URL.format(issue=issue,project=C.PROJECT)) for issue in self.issues])
 
         # split into sections
         
-        sections = re.split(HEADER_PATTERN,self.contents)
-        titles = [f"# {DEFAULT_CAT}",*re.findall(HEADER_PATTERN,self.contents)] #TODO: make configurable/defined elsewhere
+        sections = re.split(C.HEADER_PATTERN,self.contents)
+        titles = [f"# {C.DEFAULT_CAT}",*re.findall(C.HEADER_PATTERN,self.contents)] #TODO: make configurable/defined elsewhere
 
         res = []
         for title,section in zip(titles,sections):

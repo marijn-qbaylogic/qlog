@@ -2,7 +2,7 @@
 import argparse, pathlib
 
 from .util import *
-from .config import config_found
+from .config import *
 from .qlog import make_entry, collect, check, clean, github, init
 
 class App:
@@ -66,9 +66,11 @@ class App:
     def run(self):
         args = self.parser.parse_args()
 
-        if not config_found and not args.command in [None,"init"]:
-            eprint("ERROR: Cannot run command with missing configuration.")
-            exit(1)
+        if not args.command in [None,"init"]:
+            load_config()
+            if not C.config_found:
+                eprint("ERROR: Cannot run command with missing configuration.")
+                exit(1)
 
         match args.command:
             case None:
