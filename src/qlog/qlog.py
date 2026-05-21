@@ -117,7 +117,7 @@ def collect(version=None, date=None, delete=False, skip_on_error=False, out=None
     if date is None:
         date = time.strftime(DATE_FORMAT)
 
-    entry_files = os.listdir(ENTRY_DIR)
+    entry_files = get_entries(ENTRY_DIR)
     entry_files.sort()
 
     # collect entries from all files
@@ -247,7 +247,7 @@ def collect(version=None, date=None, delete=False, skip_on_error=False, out=None
 def check(paths = None, all=False):
     find_newest = not paths and not all
     if all or not paths:
-        paths = [os.path.join(ENTRY_DIR,fname) for fname in sorted(os.listdir(ENTRY_DIR))]
+        paths = [os.path.join(ENTRY_DIR,fname) for fname in sorted(get_entries(ENTRY_DIR))]
 
     if find_newest:
         # get last edited
@@ -275,7 +275,7 @@ def check(paths = None, all=False):
 def clean(delete = False):
     error = False
     
-    entries = os.listdir(ENTRY_DIR)
+    entries = get_entries(ENTRY_DIR)
 
     if delete:
         for fname in entries:
@@ -313,7 +313,7 @@ def github(post_issues=False, post_prs=False, lst=False, version=None, out=None,
             eprint(f"ERROR: Failed to render GitHub message (please provide the version number!): {repr(e)}")
             exit(1)
 
-    entry_files = os.listdir(ENTRY_DIR)
+    entry_files = get_entries(ENTRY_DIR)
     # collect all issues
     issues = []
     if post_issues:
@@ -406,11 +406,34 @@ def github(post_issues=False, post_prs=False, lst=False, version=None, out=None,
 
 def init():
     try:
+        # try to get project github link
+        project = "???/???"
+        result = subprocess.run("git config --get remote.origin.url".split(), capture_output=True)
+        try:
+            if result.returncode:
+                raise Exception
+            repo = result.stdout.decode().strip()
+            if repo.startswith("git@github.com:") and repo.endswith(".git"):
+                project = repo.split(":",1)[1].rsplit(".",1)[0]
+            else:
+                raise Exception(repr(repo)+" "+str(result))
+        except Exception as e:
+            eprint(f"Could not detect github repo to use in config file: {e}")
+
+        # make dirs
         os.makedirs(CHANGELOG_DIR, exist_ok=True) # not really needed but might be nice
         os.makedirs(ENTRY_DIR, exist_ok=True)
+
+        # make config
         if not os.path.exists(CONFIG_FILE):
             with open(CONFIG_FILE,"w") as fp:
+                fp.write(f"project: \"{project}\"")
+
+        # add a .gitkeep file to the entries dir so it never removed by git
+        GITKEEP = os.path.join(ENTRY_DIR,".gitkeep")
+        if not os.path.exists(GITKEEP):
+            with open(GITKEEP,"w") as fp:
                 fp.write("")
     except Exception as e:
-        eprint(f"ERROR: Failed to create directories/config file: {e}")
+        eprint(f"ERROR: Failed to create directories/files: {e}")
         exit(1)

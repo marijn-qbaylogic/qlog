@@ -6,6 +6,8 @@ from collections import defaultdict
 
 from .util import *
 
+
+
 ### fixed SETTINGS
 CHANGELOG_DIR = "changelog"
 ENTRY_DIR = os.path.join(CHANGELOG_DIR,"entries")
@@ -23,6 +25,10 @@ issues: {issues}
 # {cat}
 {contents}
 """.lstrip() # util, cat, contents
+
+
+root_dir(CONFIG_FILE)
+
 
 ### configurable SETTINGS
 try:
