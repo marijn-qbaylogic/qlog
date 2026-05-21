@@ -13,3 +13,7 @@ After running `qlog init`, you can:
 - Highlighting parts under custom categories
 - Displaying the same message under multiple categories (for example, in both an additions and a highlights section)
 - Defining messages for different categories in the same file.
+
+## Installation
+
+Run `pipx install . --force`.
