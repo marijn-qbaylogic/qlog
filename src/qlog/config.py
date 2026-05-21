@@ -88,7 +88,7 @@ else:
             "ADDED":        dict(title="Added"      ,rank= 1,itemize=True),
             "CHANGED":      dict(title="Changes"    ,rank= 2,itemize=True),
             "FIXED":        dict(title="Fixes"      ,rank= 3,itemize=True),
-            "DEPRICATED":   dict(title="Depricated" ,rank= 4,itemize=True),
+            "DEPRECATED":   dict(title="Deprecated" ,rank= 4,itemize=True),
             "REMOVED":      dict(title="Removed"    ,rank= 5,itemize=True),
         }
     else:
