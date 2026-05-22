@@ -28,7 +28,7 @@ issues: {issues}
 
 class Config:
     def __init__(self):
-        root_dir(self.CONFIG_FILE)
+        root_dir(CONFIG_FILE)
 
 
         ### configurable SETTINGS
