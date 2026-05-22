@@ -28,6 +28,8 @@ issues: {issues}
 
 class Config:
     def __init__(self):
+        pass
+    def load(self):
         root_dir(CONFIG_FILE)
 
 
@@ -128,8 +130,7 @@ class Config:
             self.INSERT_BEFORE_PATTERN = key("insert_before_pattern",d=r"^##[^#]")
 
 
-C = None
+C = Config()
 
 def load_config():
-    global C
-    C = Config()
+    C.load()
