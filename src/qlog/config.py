@@ -103,13 +103,13 @@ class Config:
                 self.DEFAULT_CATS = {}
                 for cat in dc.keys():
                     assertt(typeof(dc[cat])==dict,f"ERROR: default category '{cat}' must be a dictionary")
-                    DEFAULT_CATS[clean_string(cat)] = dict(
+                    self.DEFAULT_CATS[clean_string(cat)] = dict(
                         title  =get_typed(dc[cat],"title"  ,cat  ,str),
                         rank   =get_typed(dc[cat],"rank"   ,100  ,int),
                         itemize=get_typed(dc[cat],"itemize",True ,bool),
                         notitle=get_typed(dc[cat],"notitle",False,bool),
                     )
-            self.CATS = defaultdict(lambda: dict(rank=0,itemize=False,notitle=False),DEFAULT_CATS)
+            self.CATS = defaultdict(lambda: dict(rank=0,itemize=False,notitle=False),self.DEFAULT_CATS)
 
             self.DEFAULT_CAT = key("default_cat",d="HIGHLIGHT")
             if not self.DEFAULT_CAT in self.DEFAULT_CATS.keys():
