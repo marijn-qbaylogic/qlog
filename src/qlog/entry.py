@@ -56,8 +56,8 @@ class Entry:
 
         # split into sections
         
-        sections = re.split(C.HEADER_PATTERN,self.contents)
-        titles = [f"# {C.DEFAULT_CAT}",*re.findall(C.HEADER_PATTERN,self.contents)] #TODO: make configurable/defined elsewhere
+        sections = re.split(HEADER_PATTERN,self.contents)
+        titles = [f"# {C.DEFAULT_CAT}",*re.findall(HEADER_PATTERN,self.contents)] #TODO: make configurable/defined elsewhere
 
         res = []
         for title,section in zip(titles,sections):
