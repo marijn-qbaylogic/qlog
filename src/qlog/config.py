@@ -59,7 +59,7 @@ class Config:
                     exit(1)
                     
                 try:
-                    v.format({v:"" for v in vars})
+                    v.format(**{v:"" for v in vars})
                 except Exception as e:
                     eprint(f"ERROR: Value for '{k}' could not be formatted using {vars}: {e}")
                     exit(1)
