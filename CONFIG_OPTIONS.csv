@@ -1,0 +1,32 @@
+KEY,DEFAULT,VARIABLES,TYPE,DESCRIPTION
+hardcoded:,,,,
+CHANGELOG_DIR,changelog,,path,the directory used; must be in cwd or git root
+ENTRY_DIR,changelog/entries,,path,the director where entry files are stored
+CONFIG_FILE,changelog/config.yaml,,path,the config file
+ENTRY_PATTERN,\s*^\-\-\-\n(.*)^\-\-\-\n(.*),,regex,entry file must match this regex (---YAML--- MARKDOWN)
+HEADER_PATTERN,^#[^#].*$,,regex,"a markdown H1 header, used to denote an entry"
+ENTRY_TEMPLATE,--- issues: {issues} --- # {cat} {contents},"issues, cat, contents",md/yaml,the template used when creating entry files using qlog entry
+,,,,
+configurable:,,,,
+project,,,,the project as used in urls; generally <user>/<repo>
+issue_url,https://github.com/{project}/issues/{issue},"project, issue",url,issue url; used for adding issue links and posting messages on GH
+pr_url,https://github.com/{project}/pull/{pr},"project, pr",url,pr url; used for posting messages on GH
+commit_url,https://github.com/{project}/branch_commits/{commit},"project, commit",url,"the url for a commit, used in the process of finding Prs"
+md_issue_link,[#{issue}]({issue_url}),"issue, issue_url",md,the MD to add to an entry for each linked issue
+gh_issue_message,"We've released [v{version}](https://github.com/{project}/releases/tag/v{version}), which includes a fix for this issue.","project, version",str,message to post on GH issues
+gh_pr_message,"We've released [v{version}](https://github.com/{project}/releases/tag/v{version}), which includes this PR.","project, version",str,message to post on GH Prs
+gh_issue_title_cmd,"gh issue view {issue} --json title,url -q 'if .url | contains(""pull"") then error(""[PR] ""+.title) else .title end'",issue,bash,command for getting the title of a GH issue
+gh_issue_cmd,gh issue comment {issue_url} -b {message_string},"issue, issue_url, message_string",bash,command for posting a message to a GH issue
+gh_pr_cmd,gh pr comment {pr_url} -b {message_string},"pr, pr_url, message_string",bash,command for posting a message to a GH PR
+default_cats,…,,dict[cat→dict],list of default categories
+default_cats > elem > title,,,str,
+default_cats > elem > rank,100,,int,"The position of a category in the combined changelog. Lower is earlier (higher), and custom categories get rank 0"
+default_cats > elem > itemize,TRUE,,bool,itemize entries even when there is only one entry in the category
+default_cats > elem > notitle,FALSE,,bool,hide the category title when there is only one entry in the category
+default_cat,HIGHLIGHT,,cat,the category to use for text placed before any heading
+time_format,%Y-%m-%d_T%H:%M:%S,,time,the timestamp format to use in the entry file filename
+entry_filename_format,{time}_{title}.md,"time, title",path,the format of the entry file filenames
+date_format,"%d %b, %Y",,time,the format of the date to use in the changelog header
+title_format,## {version} - *{date}*,"version, date",md,the header to put above the combined changelog
+cat_header_format,### {cat}:,cat,md,the header to put above the changelog categories
+insert_before_pattern,^##[^#],,regex,"A regex matching title_format, so that the newest changelog can be inserted before the previous one. This allows a constant message to be added above all versions."
