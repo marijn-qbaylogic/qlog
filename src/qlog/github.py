@@ -7,7 +7,7 @@ from .config import *
 
 @functools.lru_cache(maxsize=None)
 def get_pr(digest):
-    html = requests.get(COMMIT_URL.format(project=PROJECT,commit=digest)).content
+    html = requests.get(C.COMMIT_URL.format(project=C.PROJECT,commit=digest)).content
     doc = lxml.html.fromstring(html)
     prs = doc.cssselect(".pull-request > a")
     prs = tuple({int(pr.text.strip()[1:]) for pr in prs})
