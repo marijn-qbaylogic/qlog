@@ -170,7 +170,7 @@ def collect(version=None, date=None, delete=False, skip_on_error=False, out=None
         if not out is None:
             try:
                 with open(out,"w") as fp:
-                    fp.write(out)
+                    fp.write(res)
             except Exception as e:
                 eprint(f"ERROR: Could not write file {out}: {e}")
                 error = True
