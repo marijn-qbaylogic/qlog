@@ -175,7 +175,7 @@ def collect(version=None, date=None, delete=False, skip_on_error=False, out=None
                 eprint(f"ERROR: Could not write file {out}: {e}")
                 error = True
             else:
-                eprint("Wrote to {out}")
+                eprint(f"Wrote to {out}")
         if not prepend is None:
             try:
                 with open(prepend,"r") as fp:
