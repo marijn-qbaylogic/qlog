@@ -8,9 +8,13 @@ from .config import *
 @functools.lru_cache(maxsize=None)
 def get_pr(digest):
     html = requests.get(C.COMMIT_URL.format(project=C.PROJECT,commit=digest)).content
-    doc = lxml.html.fromstring(html)
-    prs = doc.cssselect(".pull-request > a")
-    prs = tuple({int(pr.text.strip()[1:]) for pr in prs})
+    try:
+        doc = lxml.html.fromstring(html)
+    except:
+        prs = []
+    else:
+        prs = doc.cssselect(".pull-request > a")
+        prs = tuple({int(pr.text.strip()[1:]) for pr in prs})
     if len(prs) == 1:
         return prs[0]
     elif len(prs) > 1:
