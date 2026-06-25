@@ -168,6 +168,7 @@ def collect(version=None, date=None, delete=False, skip_on_error=False, out=None
         print(res)
     else:
         if not out is None:
+            out = os.path.join(WORKING_DIR,out)
             try:
                 with open(out,"w") as fp:
                     fp.write(res)
@@ -177,6 +178,7 @@ def collect(version=None, date=None, delete=False, skip_on_error=False, out=None
             else:
                 eprint(f"Wrote to {out}")
         if not prepend is None:
+            prepend = os.path.join(WORKING_DIR,prepend)
             try:
                 with open(prepend,"r") as fp:
                     txt = fp.read()
@@ -193,6 +195,7 @@ def collect(version=None, date=None, delete=False, skip_on_error=False, out=None
                 else:
                     eprint(f"Prepended to {prepend}")
         if not append is None:
+            append = os.path.join(WORKING_DIR,append)
             try:
                 with open(append,"r") as fp:
                     txt = fp.read()
@@ -209,6 +212,7 @@ def collect(version=None, date=None, delete=False, skip_on_error=False, out=None
                 else:
                     eprint(f"Appended to {append}")
         if not insert is None:
+            insert = os.path.join(WORKING_DIR,insert)
             try:
                 with open(insert,"r") as fp:
                     txt = fp.read()
@@ -384,6 +388,7 @@ def github(post_issues=False, post_prs=False, lst=False, version=None, out=None,
     if out is None:
         print(res)
     else:
+        out = os.path.join(WORKING_DIR,out)
         try:
             with open(out,"w") as fp:
                 fp.write(res)

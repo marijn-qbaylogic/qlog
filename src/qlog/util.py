@@ -5,6 +5,8 @@ import os
 import unicodedata
 import subprocess
 
+WORKING_DIR = os.getcwd()
+
 # print to stderr
 def eprint(*args, **kwargs):
     print(*args, **kwargs, file=sys.stderr)
