@@ -55,7 +55,7 @@ def issue_link(C, issue, include_title=False):
     link = C.MD_ISSUE_LINK.format(issue=issue, issue_url=C.ISSUE_URL.format(issue=issue,project=C.PROJECT))
     if include_title:
         if not issue in ISSUE_TITLES:
-            result = subprocess.run(C.GH_ISSUE_TITLE_CMD.format(issue=i), shell=True, capture_output=True)
+            result = subprocess.run(C.GH_ISSUE_TITLE_CMD.format(issue=issue), shell=True, capture_output=True)
             if result.returncode:
                 ISSUE_TITLES[issue] = result.stderr.decode().strip()
             else:
