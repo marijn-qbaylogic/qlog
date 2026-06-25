@@ -51,7 +51,7 @@ def root_dir(CONFIG_FILE):
             os.chdir(git_root)
 
 ISSUE_TITLES = {}
-def issue_link(issue, include_title=False):
+def issue_link(C, issue, include_title=False):
     link = C.MD_ISSUE_LINK.format(issue=issue, issue_url=C.ISSUE_URL.format(issue=issue,project=C.PROJECT))
     if include_title:
         if not issue in ISSUE_TITLES:

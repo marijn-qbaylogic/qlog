@@ -52,7 +52,7 @@ class Entry:
         return Entry(path, contents, issues)
 
     def parse(self,issue_comments=False):
-        issue_links = " ".join([issue_link(issue,include_title=issue_comments) for issue in self.issues])
+        issue_links = " ".join([issue_link(C,issue,include_title=issue_comments) for issue in self.issues])
 
         # split into sections
         
