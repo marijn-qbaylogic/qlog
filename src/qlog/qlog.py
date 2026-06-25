@@ -252,7 +252,8 @@ def check(paths = None, all=False):
     if find_newest:
         # get last edited
         if paths:
-            paths = [min((os.path.getmtime(path),path) for path in paths)[1]]
+            # print([(os.path.getmtime(path),path) for path in paths])
+            paths = [max((os.path.getmtime(path),path) for path in paths)[1]]
         else:
             eprint("No entries to check")
 
