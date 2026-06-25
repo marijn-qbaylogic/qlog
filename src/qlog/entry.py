@@ -51,8 +51,8 @@ class Entry:
 
         return Entry(path, contents, issues)
 
-    def parse(self):
-        issue_links = " ".join([C.MD_ISSUE_LINK.format(issue=issue, issue_url=C.ISSUE_URL.format(issue=issue,project=C.PROJECT)) for issue in self.issues])
+    def parse(self,issue_comments=False):
+        issue_links = " ".join([issue_link(issue,include_title=issue_comments) for issue in self.issues])
 
         # split into sections
         

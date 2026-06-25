@@ -107,7 +107,7 @@ def make_entry(title=None, issues=None, cat=None, contents=None, interactive=Tru
     print(os.path.abspath(os.path.join(ENTRY_DIR,fname)))
 
 
-def collect(version=None, date=None, delete=False, skip_on_error=False, out=None, prepend=None, append=None, insert=None):
+def collect(version=None, date=None, delete=False, skip_on_error=False, issue_comments=False, out=None, prepend=None, append=None, insert=None):
     cat_names = {}
     cat_blobs = defaultdict(list)
 
@@ -129,7 +129,7 @@ def collect(version=None, date=None, delete=False, skip_on_error=False, out=None
         if entry is None:
             continue
 
-        for cats,blob in entry.parse():
+        for cats,blob in entry.parse(issue_comments):
             for cat_name,cat in cats:
                 cat_names[cat] = cat_name
                 cat_blobs[cat].append(blob)
