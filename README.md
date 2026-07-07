@@ -16,7 +16,14 @@ After running `qlog init`, you can:
 
 ## Installation
 Clone the repository. Then, in the root folder, run `pipx install . --force`.
-This command can be repeated to update the tool (after pulling from the repository).
+This command can be repeated to update the tool (after pulling from the
+repository).
+Alternatively, the tool can be installed via the nix flake. For example, you can
+add it to the default profile:
+
+```
+$ nix profile add github:marijn-qbaylogic/qlog
+```
 
 
 # Usage
@@ -64,13 +71,13 @@ For example:
 ```
 $ qlog entry
 Title (used for file name): fix infinite loop
-Confirm title "fix_infinite_loop" [Y/n]: 
+Confirm title "fix_infinite_loop" [Y/n]:
 Related issues: 4
 Issues: [4]
 4: Add PR metadata tag
 Confirm issues [Y/n]:
 Category (0:HIGHLIGHT/1:CUSTOM/2:ADDED/3:CHANGED/4:FIXED/5:DEPRECATED/6:REMOVED): fix
-Confirm category FIXED [Y/n]: 
+Confirm category FIXED [Y/n]:
 Enter contents
 To enter multiple lines, enter an empty line, then terminate with 3 empty lines
 > Fixed an infinite loop bug that caused the application to hang.
