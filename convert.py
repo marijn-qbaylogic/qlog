@@ -41,7 +41,7 @@ for file in files:
     else:
         cat = None
     
-    if m:=re.match("(.*?)( See| Fixes)? \[#(\d+)\]\(.*\)\.?",text,re.DOTALL):
+    if m:=re.match(r"(.*?)( See| Fixes)? \[#(\d+)\]\(.*\)\.?",text,re.DOTALL):
         text,_,issue = m.groups()
     else:
         issue = None
