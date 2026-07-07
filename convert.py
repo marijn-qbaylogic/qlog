@@ -61,7 +61,6 @@ issues: [{issue}]
 ---
 
 # {cat}
-
 {text}
 """
 
