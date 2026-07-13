@@ -145,19 +145,22 @@ so it can easily be cherry-picked.
 Finally, `qlog` has builtin tools for posting messages to the linked issues,
 as well as the PRs that added/changed the changelog entry files.
 
-The main command is `qlog gh`. To target the linked issues, use `-i`/`--issues`,
-and to find and target prs, use `-p`/`--prs`.
+The main commands are `qlog gh list` and `qlog gh msg`. To target the linked issues, use `-i`/`--issues`,
+and to find and target prs, use `-p`/`--prs`. To include the titles of issues/prs, use `-t`/`--titles`.
+
+`qlog gh list` can be used to list linked issues, as well as PRs detected to be responsible for introducing entries.
+To view these per entry, use `-e`/`--per-entry`.
+
+`qlog gh msg` can be used to post release messages to issues and PRs.
 The default message references the update version, which requires you to specify it using `-v`/`--version`.
 
 By default, the command will output a list of commands to post the messages. These can be stored to a file by specifying `-o`/`--out`, or executed immediately using `-x`/`--exec`.
 
-For example, `qlog gh -i -v "1.2.3" -o post_msgs.sh`,
+For example, `qlog gh msg -i -v "1.2.3" -o post_msgs.sh`,
 followed by `bash post_msgs.sh` after checking everything is in order.
 
-It's also possible to only list the PR/issue numbers using `-l`/`--list`.
-
 Note that the default message assumes the version is created
-with a specific tag including the version number,
+with a specific tag including the version number (`v<version>`),
 which generally does not exist yet when the entry files are deleted
 (since this happens when creating the changelog, which is still part of the release process).
 It might be easier to go back to an earlier commit that still has the files.
