@@ -32,9 +32,6 @@ def assertt(cond,msg):
 def item(b):
     return "- " + re.sub(r"^\s+$", "", b.replace("\n","\n  "), re.MULTILINE).rstrip()
 
-# get entries ignoring .gitkeep etc
-def get_entries(ENTRY_DIR):
-    return [e for e in os.listdir(ENTRY_DIR) if not e.startswith(".")]
 
 # find a git repo root dir
 def root_dir(CONFIG_FILE):
@@ -49,16 +46,3 @@ def root_dir(CONFIG_FILE):
         git_root = result.stdout.decode().strip()
         if os.path.exists(os.path.join(git_root,CONFIG_FILE)):
             os.chdir(git_root)
-
-ISSUE_TITLES = {}
-def issue_link(C, issue, include_title=False):
-    link = C.MD_ISSUE_LINK.format(issue=issue, issue_url=C.ISSUE_URL.format(issue=issue,project=C.PROJECT))
-    if include_title:
-        if not issue in ISSUE_TITLES:
-            result = subprocess.run(C.GH_ISSUE_TITLE_CMD.format(issue=issue), shell=True, capture_output=True)
-            if result.returncode:
-                ISSUE_TITLES[issue] = result.stderr.decode().strip()
-            else:
-                ISSUE_TITLES[issue] = result.stdout.decode().strip()
-        link += f" <!-- {ISSUE_TITLES[issue]} -->"
-    return link

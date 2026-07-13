@@ -14,6 +14,7 @@ from .util import *
 from .config import *
 from .entry import *
 from .github import *
+from .helpers import *
 
 def make_entry(title=None, issues=None, cat=None, contents=None, interactive=True):
     if title is None:
@@ -36,12 +37,9 @@ def make_entry(title=None, issues=None, cat=None, contents=None, interactive=Tru
                     issues_ok = True
                     for i in issues:
                         eprint(f"{i}: ",end="")
-                        result = subprocess.run(C.GH_ISSUE_TITLE_CMD.format(issue=i), shell=True, capture_output=True)
-                        if result.returncode:
-                            eprint(result.stderr.decode().strip())
-                            issues_ok = False
-                        else:
-                            eprint(result.stdout.decode().strip())
+                        (t,r) = get_issue_title(i)
+                        issues_ok = issues_ok and r
+                        eprint(t)
 
                     if issues_ok:
                         if not "n" in input("Confirm issues [Y/n]:").lower():
@@ -117,8 +115,7 @@ def collect(version=None, date=None, delete=False, skip_on_error=False, issue_co
     if date is None:
         date = time.strftime(C.DATE_FORMAT)
 
-    entry_files = get_entries(ENTRY_DIR)
-    entry_files.sort()
+    entry_files = get_entries()
 
     # collect entries from all files
     success=[]
@@ -251,7 +248,7 @@ def collect(version=None, date=None, delete=False, skip_on_error=False, issue_co
 def check(paths = None, all=False):
     find_newest = not paths and not all
     if all or not paths:
-        paths = [os.path.join(ENTRY_DIR,fname) for fname in sorted(get_entries(ENTRY_DIR))]
+        paths = [os.path.join(ENTRY_DIR,fname) for fname in get_entries()]
 
     if find_newest:
         # get last edited
@@ -280,7 +277,7 @@ def check(paths = None, all=False):
 def clean(delete = False):
     error = False
     
-    entries = get_entries(ENTRY_DIR)
+    entries = get_entries()
 
     if delete:
         for fname in entries:
@@ -300,15 +297,62 @@ def clean(delete = False):
         
     eprint("All clean!")
 
-def github(post_issues=False, post_prs=False, lst=False, version=None, out=None, exec_commands=False):
-    error = False
-    
+
+
+def github_list(post_issues=False, post_prs=False, per_entry=False, include_titles=False):
+    if not (post_issues or post_prs):
+        eprint("Please indicate whether to look at issues (-i) or PRs (-p)")
+        exit(1)
+    # only list pr/issue numbers that have been collected
+
+    data = map_entries(lambda fname,entry: github_get(fname,entry,get_issues=post_issues,get_prs=post_prs,get_titles=include_titles))
+
+    # print a simple list, or list of titles
+    def print_set(issues,prs):
+        if include_titles:
+            if post_issues:
+                print("Issues:")
+                for (i,t) in issues:
+                    print(f"  {i}: {t}")
+            if post_prs:
+                print("PRs:")
+                for (p,t) in prs:
+                    print(f"  {p}: {t}")
+        else:
+            if post_issues:
+                print("Issues:", *[i for (i,_) in issues])
+            if post_prs:
+                print("PRs:", *[p for (p,_) in prs])
+
+    # print per entry or aggregate
+    if per_entry:
+        for e in data:
+            print(e)
+            print_set(data[e].get("issues"),data[e].get("prs"))
+    else:
+        issues=set()
+        prs=set()
+        if post_issues:
+            for d in data.values:
+                for i in d["issues"]:
+                    issues.add(i)
+        if post_prs:
+            for d in data.values:
+                for p in d["prs"]:
+                    prs.add(p)
+
+        issues = sorted(list(issues))
+        prs = sorted(list(prs))
+        print_set(issues,prs)
+
+
+def github_msg(post_issues=False, post_prs=False, version=None, out=None, exec_commands=False, include_titles=False):
     if not (post_issues or post_prs):
         eprint("Please indicate whether to look at issues (-i) or PRs (-p)")
         exit(1)
 
     # if the version is part of the message, make sure it's been supplied
-    if not lst and version is None:
+    if version is None:
         try:
             if post_issues:
                 C.GH_ISSUE_MESSAGE.format()
@@ -318,66 +362,41 @@ def github(post_issues=False, post_prs=False, lst=False, version=None, out=None,
             eprint(f"ERROR: Failed to render GitHub message (please provide the version number!): {repr(e)}")
             exit(1)
 
-    entry_files = get_entries(ENTRY_DIR)
+    data = map_entries(lambda fname,entry: github_get(fname,entry,get_issues=post_issues,get_prs=post_prs))
+
     # collect all issues
     issues = []
     if post_issues:
         issues=set()
-
-        success=0
-        for fname in entry_files:
-            path = os.path.join(ENTRY_DIR,fname)
-            entry = Entry.open(path)
-            
-            if entry is None:
-                continue
-
-            issues=issues.union(entry.issues)
-            success+=1
-            
+        for d in data.values:
+            for i in d["issues"]:
+                issues.add(i)
         issues=sorted(list(issues))
     
     # detect PRs
     prs = []
     if post_prs:
         prs = set()
-        for fname in entry_files:
-            try:
-                result = subprocess.run(["git","blame","-l",os.path.join(ENTRY_DIR,fname)], check=True, capture_output=True)
-            except Exception as e:
-                eprint(f"ERROR: Failed to blame entry {fname}: {e}")
-                exit(1)
-            blame_lines = result.stdout.splitlines()
-
-            for blame_line in blame_lines:
-                commit = blame_line.split()[0].decode()
-                if not (pr:=get_pr(commit)) is None:
-                    prs.add(pr)
+        for d in data.values:
+            for p in d["prs"]:
+                prs.add(p)
         prs = sorted(list(prs))
-
-    # only list pr/issue numbers that have been collected
-    if lst:
-        if not (version is None and out is None) or exec_commands:
-            eprint("Ignoring other output options")
-            
-        if post_issues:
-            print("Issues:", *issues)
-        if post_prs:
-            print("PRs:", *prs)
-
-        return
 
     # generate commands
     commands = []
     if post_issues:
         message_string = json.dumps(C.GH_ISSUE_MESSAGE.format(version=version,project=C.PROJECT))
-        for issue in issues:
+        for (issue,title) in issues:
+            if include_titles:
+                commands.append(f"# {title}")
             url = C.ISSUE_URL.format(issue=issue,project=C.PROJECT)
             cmd = C.GH_ISSUE_CMD.format(issue_url=url, message_string=message_string)
             commands.append(cmd)
     if post_prs:
         message_string = json.dumps(C.GH_PR_MESSAGE.format(version=version,project=C.PROJECT))
-        for pr in prs:
+        for (pr,title) in prs:
+            if include_titles:
+                commands.append(f"# {title}")
             url = C.PR_URL.format(pr=pr,project=C.PROJECT)
             cmd = C.GH_PR_CMD.format(pr_url=url, message_string=message_string)
             commands.append(cmd)
@@ -433,7 +452,7 @@ def init():
         # make config
         if not os.path.exists(CONFIG_FILE):
             with open(CONFIG_FILE,"w") as fp:
-                fp.write(f"project: \"{project}\"\n")
+                print(f'project: "{project}"', file=fp)
 
         # add a .gitkeep file to the entries dir so it never removed by git
         GITKEEP = os.path.join(ENTRY_DIR,".gitkeep")

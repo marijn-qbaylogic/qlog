@@ -3,7 +3,7 @@ import argparse, pathlib
 
 from .util import *
 from .config import *
-from .qlog import make_entry, collect, check, clean, github, init
+from .qlog import make_entry, collect, check, clean, github_list, github_msg, init
 
 class App:
     def __init__(self):
@@ -53,16 +53,26 @@ class App:
         parser_clean.add_argument("-D","--delete", action="store_true", help="delete remaining entries; if this flag is not specified, the program will error if any entries are left")
 
         parser_github = subparsers.add_parser("gh", help="post release messages on GitHub", description="Generate GitHub CLI commands to post to all issues combined in this changelog.")
-        parser_github.add_argument("-i","--issues"  , action="store_true"   , help="send messages to issues")
-        parser_github.add_argument("-p","--prs"     , action="store_true"   , help="send messages to PRs")
-        parser_github.add_argument("-l","--list"    , action="store_true"   , help="do not produce messages; just list the issues/prs that would be affected")
-        parser_github.add_argument("-v","--version" , type=str              , help="a version to use in the message")
-        parser_github.add_argument("-o","--out"     , type=pathlib.Path     , help="output commands to file")
-        parser_github.add_argument("-x","--exec"    , action="store_true"   , help="execute generated commands; fails if version is not specified but required for messages")
+        subparsers_github = parser_github.add_subparsers(dest="subcommand")
+        parser_github_list = subparsers_github.add_parser("list", help="list issues and PRs", description="List issues and PRs involved in the changelog")
+        parser_github_msg = subparsers_github.add_parser("msg", help="post release messages", description="Generate GitHub CLI commands to post to issues/PRs involved in the changelog")
+        
+        parser_github_msg.add_argument("-i","--issues"  , action="store_true"   , help="send messages to issues")
+        parser_github_msg.add_argument("-p","--prs"     , action="store_true"   , help="send messages to PRs")
+        parser_github_msg.add_argument("-t","--titles"  , action="store_true"   , help="print issue/pr titles")
+        parser_github_msg.add_argument("-v","--version" , type=str              , help="a version to use in the message")
+        parser_github_msg.add_argument("-o","--out"     , type=pathlib.Path     , help="output commands to file")
+        parser_github_msg.add_argument("-x","--exec"    , action="store_true"   , help="execute generated commands; fails if version is not specified but required for messages")
 
+        parser_github_list.add_argument("-i","--issues"  , action="store_true"   , help="send messages to issues")
+        parser_github_list.add_argument("-p","--prs"     , action="store_true"   , help="send messages to PRs")
+        parser_github_list.add_argument("-t","--titles"  , action="store_true"   , help="print issue/pr titles")
+        parser_github_list.add_argument("-e","--per-entry",action="store_true"   , help="print results per entry")
+        
         parser_init = subparsers.add_parser("init", help="initialise the right directories; does nothing to existing files")
 
         self.parser = parser
+        self.parser_github = parser_github
     
     def run(self):
         args = self.parser.parse_args()
@@ -105,14 +115,25 @@ class App:
                     delete = args.delete,
                 )
             case "gh":
-                github(
-                    post_issues = args.issues,
-                    post_prs = args.prs,
-                    lst = args.list,
-                    version = args.version,
-                    out = args.out,
-                    exec_commands = args.exec,
-                )
+                match args.subcommand:
+                    case None:
+                        self.parser_github.print_help()
+                    case "list":
+                        github_list(
+                            post_issues = args.issues,
+                            post_prs = args.prs,
+                            per_entry = args.per_entry,
+                            include_titles = args.titles,
+                        )
+                    case "msg":
+                        github_msg(
+                            post_issues = args.issues,
+                            post_prs = args.prs,
+                            include_titles = args.titles,
+                            version = args.version,
+                            out = args.out,
+                            exec_commands = args.exec,
+                        )
             case "init":
                 init()
 

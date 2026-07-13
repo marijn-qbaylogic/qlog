@@ -5,6 +5,15 @@ import lxml.html
 from .util import *
 from .config import *
 
+
+@functools.lru_cache(maxsize=None)
+def get_issue_title(i):
+    result = subprocess.run(C.GH_ISSUE_TITLE_CMD.format(issue=i), shell=True, capture_output=True)
+    if result.returncode:
+        return (result.stderr.decode().strip(), False)
+    else:
+        return (result.stdout.decode().strip(), True)
+
 @functools.lru_cache(maxsize=None)
 def get_pr(digest):
     html = requests.get(C.COMMIT_URL.format(project=C.PROJECT,commit=digest)).content

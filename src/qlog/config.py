@@ -32,7 +32,6 @@ class Config:
     def load(self):
         root_dir(CONFIG_FILE)
 
-
         ### configurable SETTINGS
         try:
             with open(CONFIG_FILE,"r") as fp:
