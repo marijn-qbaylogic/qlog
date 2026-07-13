@@ -13,7 +13,7 @@ def get_issue_title(i):
         return (result.stderr.decode().strip(), False)
     else:
         title = result.stdout.decode().strip()
-        return (title, not title.startswith("[PR]"))
+        return (title, True)
 
 @functools.lru_cache(maxsize=None)
 def get_pr(digest):

@@ -5,10 +5,11 @@ from .util import *
 from .config import *
 
 class Entry:
-    def __init__(self, path, contents, issues):
+    def __init__(self, path, contents, issues, prs):
         self.path = path
         self.contents = contents
         self.issues = issues
+        self.prs = prs
 
     # open entry and return Entry if successful
     @staticmethod
@@ -32,27 +33,46 @@ class Entry:
         
         # extract issues
         try:
-            match yaml.load(meta,yaml.Loader):
+            header = yaml.load(meta,yaml.Loader)
+
+            match header:
+                case {**rest}:
+                    pass
+                case None:
+                    pass
+                case _:
+                    raise Exception("Invalid metadata format")
+
+            # issues
+            match header:
                 case {"issues": [*all_issues],**rest} if all(isinstance(issue, int) for issue in all_issues):
                     issues = all_issues
                 case {"issues": int() as issue, **rest}:
                     issues = [issue]
                 case {"issues": _, **rest}:
                     raise Exception("Invalid issue list")
-                case {**rest}:
-                    issues = []
-                case None:
-                    issues = []
                 case _:
-                    raise Exception("Invalid metadata format")
+                    issues = []
+            
+            # prs  
+            match header:
+                case {"prs": [*all_prs],**rest} if all(isinstance(pr, int) for pr in all_prs):
+                    prs = all_prs
+                case {"prs": int() as pr, **rest}:
+                    prs = [pr]
+                case {"prs": _, **rest}:
+                    raise Exception("Invalid pr list")
+                case _:
+                    prs = []
         except Exception as e:
             error(f"{e} in {path}")
             return
 
-        return Entry(path, contents, issues)
+        return Entry(path, contents, issues, prs)
 
-    def parse(self,issue_comments=False):
-        issue_links = " ".join([issue_link(C,issue,include_title=issue_comments) for issue in self.issues])
+    def parse(self,link_comments=False):
+        links = " ".join([issue_link(C,issue,include_title=link_comments) for issue in self.issues] + 
+                         [pr_link(C,pr,include_title=link_comments) for pr in self.prs])
 
         # split into sections
         
@@ -65,7 +85,7 @@ class Entry:
             if not section:
                 continue
 
-            section+="\n"+issue_links
+            section+="\n"+links
             
             cats = [cat.strip().rstrip(":") for cat in title[1:].split("|")] # TODO: make the [1:] more flexible? also see f"# ..." above
             res.append(([(cat,clean_string(cat)) for cat in cats], section))

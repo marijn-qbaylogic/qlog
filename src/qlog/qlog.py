@@ -26,19 +26,27 @@ def make_entry(title=None, issues=None, cat=None, contents=None, interactive=Tru
                 if not "n" in input(f"Confirm title \"{title}\" [Y/n]: ").lower():
                     break
 
-    if issues is None:
+    if issues is None and prs is None:
         issues = []
+        prs = []
         if interactive:
             while True:
-                issues = input("Related issues: ")
-                issues = [int(i) for i in re.split(r"[\s,;]+",issues) if i.isnumeric()]
-                eprint(f"Issues: {issues}")
-                if issues:
+                issues_prs = input("Related issues/PRs: ")
+                issues_prs = [int(i) for i in re.split(r"[\s,;]+",issues) if i.isnumeric()]
+                eprint(f"Issues/PRs: {issues_prs}")
+
+                issues = []
+                prs = []
+                if issues_prs:
                     issues_ok = True
                     for i in issues:
                         eprint(f"{i}: ",end="")
                         (t,r) = get_issue_title(i)
                         issues_ok = issues_ok and r
+                        if t.startswith("[PR]"):
+                            prs.append(i)
+                        else:
+                            issues.append(i)
                         eprint(t)
 
                     if issues_ok:
@@ -100,12 +108,12 @@ def make_entry(title=None, issues=None, cat=None, contents=None, interactive=Tru
     fname = C.ENTRY_FILENAME_FORMAT.format(title=title,time=timestamp,cat=cat,issues=issues)
     
     with open(os.path.join(ENTRY_DIR,fname),"w") as fp:
-        fp.write(ENTRY_TEMPLATE.format(issues=issues,cat=cat,contents=contents))
+        fp.write(ENTRY_TEMPLATE.format(issues=issues,prs=prs,cat=cat,contents=contents))
         
     print(os.path.abspath(os.path.join(ENTRY_DIR,fname)))
 
 
-def collect(version=None, date=None, delete=False, skip_on_error=False, issue_comments=False, out=None, prepend=None, append=None, insert=None):
+def collect(version=None, date=None, delete=False, skip_on_error=False, link_comments=False, out=None, prepend=None, append=None, insert=None):
     cat_names = {}
     cat_blobs = defaultdict(list)
 
@@ -126,7 +134,7 @@ def collect(version=None, date=None, delete=False, skip_on_error=False, issue_co
         if entry is None:
             continue
 
-        for cats,blob in entry.parse(issue_comments):
+        for cats,blob in entry.parse(link_comments):
             for cat_name,cat in cats:
                 cat_names[cat] = cat_name
                 cat_blobs[cat].append(blob)
@@ -256,8 +264,8 @@ def check(paths = None, all=False):
         if entry is None:
             continue
 
-        if not entry.issues:
-            warn("no linked issues")
+        if not entry.issues and not entry.prs:
+            warn("No linked issues/PRs")
             
     if has_failed():
         exit(1)

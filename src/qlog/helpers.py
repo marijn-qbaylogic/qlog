@@ -29,6 +29,13 @@ def issue_link(issue, include_title=False):
         link += f" <!-- {title} -->"
     return link
 
+def pr_link(pr, include_title=False):
+    link = C.MD_PR_LINK.format(pr=pr, pr_url=C.PR_URL.format(pr=pr,project=C.PROJECT))
+    if include_title:
+        (title,_) = get_issue_title(issue)
+        link += f" <!-- {title} -->"
+    return link
+
 
 def github_get(fname,entry,get_issues=False, get_prs=False,get_titles=False):
     res = {}

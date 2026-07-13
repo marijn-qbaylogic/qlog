@@ -38,7 +38,7 @@ class App:
         parser_collect.add_argument("-d","--date"           , type=str              , help="the date to use in the title")
         parser_collect.add_argument("-D","--delete"         , action="store_true"   , help="delete entries afterwards if successful")
         parser_collect.add_argument("-e","--skip-on-error"  , action="store_true"   , help="skip entries that yield errors")
-        parser_collect.add_argument("-c","--issue-comments" , action="store_true"   , help="include a comment containing the issue title after every issue link")
+        parser_collect.add_argument("-c","--link-comments"  , action="store_true"   , help="include a comment containing the issue/PR title after every link")
         parser_collect.add_argument("-o","--out"            , type=pathlib.Path     , help="file to write output to")
         parser_collect.add_argument("-p","--prepend"        , type=pathlib.Path     , help="file to prepend output to")
         parser_collect.add_argument("-a","--append"         , type=pathlib.Path     , help="file to append output to")
@@ -99,7 +99,7 @@ class App:
                     version = args.version,
                     delete = args.delete,
                     skip_on_error = args.skip_on_error,
-                    issue_comments = args.issue_comments,
+                    link_comments = args.link_comments,
                     out = args.out,
                     prepend = args.prepend,
                     append = args.append,

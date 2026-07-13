@@ -19,6 +19,7 @@ CONFIG_FILE = os.path.join(CHANGELOG_DIR,"config.yaml")
 ENTRY_TEMPLATE = """
 ---
 issues: {issues}
+prs: {prs}
 ---
 
 # {cat}
@@ -79,6 +80,7 @@ class Config:
             self.COMMIT_URL = key("commit_url","project","commit",d="https://github.com/{project}/branch_commits/{commit}") # project, commit
 
             self.MD_ISSUE_LINK = key("md_issue_link","issue","issue_url",d="[#{issue}]({issue_url})") # issue, issue_url
+            self.MD_PR_LINK = key("md_pr_link","pr","pr_url",d="[P{pr}]({pr_url})") # pr, pr_url
 
             self.GH_ISSUE_MESSAGE = key("gh_issue_message","project","version",d="We've released [v{version}](https://github.com/{project}/releases/tag/v{version}), which includes a fix for this issue.") # version, project
             self.GH_PR_MESSAGE    = key("gh_pr_message"   ,"project","version",d="We've released [v{version}](https://github.com/{project}/releases/tag/v{version}), which includes this PR.") # version, project
@@ -94,8 +96,8 @@ class Config:
                 self.DEFAULT_CATS = {
                     "HIGHLIGHT":    dict(title="Highlights" ,rank=-1,itemize=False,notitle=True), # if there's only one entry, do not itemize, and remove the "Highlights" title
                     "ADDED":        dict(title="Added"      ,rank= 1,itemize=True),
-                    "CHANGED":      dict(title="Changes"    ,rank= 2,itemize=True),
-                    "FIXED":        dict(title="Fixes"      ,rank= 3,itemize=True),
+                    "CHANGED":      dict(title="Changed"    ,rank= 2,itemize=True),
+                    "FIXED":        dict(title="Fixed"      ,rank= 3,itemize=True),
                     "DEPRECATED":   dict(title="Deprecated" ,rank= 4,itemize=True),
                     "REMOVED":      dict(title="Removed"    ,rank= 5,itemize=True),
                 }
