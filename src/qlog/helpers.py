@@ -2,6 +2,7 @@
 from .util import *
 from .config import *
 from .github import *
+from .entry import *
 
 # get entries ignoring .gitkeep etc
 def get_entries():
@@ -18,6 +19,7 @@ def map_entries(f):
             continue
 
         res[fname] = f(fname,entry)
+    return res
 
 
 def issue_link(issue, include_title=False):
@@ -30,24 +32,22 @@ def issue_link(issue, include_title=False):
 
 def github_get(fname,entry,get_issues=False, get_prs=False,get_titles=False):
     res = {}
-    res["errors"] = False
     if get_issues:
-        res["issues"] = [(i, get_issue_title(i) if get_titles else None) for i in entry.issues]
+        res["issues"] = [(i, get_issue_title(i)[0] if get_titles else None) for i in entry.issues]
     if get_prs:
         prs = set()
 
         try:
             result = subprocess.run(["git","blame","-l",os.path.join(ENTRY_DIR,fname)], check=True, capture_output=True)
         except Exception as e:
-            eprint(f"ERROR: Failed to blame entry {fname}: {e}")
-            res["errors"] = True
+            error(f"Failed to blame entry {fname}: {e}")
         else:
             blame_lines = result.stdout.splitlines()
 
             for blame_line in blame_lines:
                 commit = blame_line.split()[0].decode()
                 if not (pr:=get_pr(commit)) is None:
-                    prs.add((pr,get_issue_title(pr) if get_titles else None))
+                    prs.add((pr,get_issue_title(pr)[0] if get_titles else None))
         res["prs"] = sorted(list(prs))
     return res
     

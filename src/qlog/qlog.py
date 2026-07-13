@@ -111,7 +111,7 @@ def collect(version=None, date=None, delete=False, skip_on_error=False, issue_co
 
     if version is None:
         version = "<version>"
-        eprint("WARN: Version not supplied! Replace the title placeholder manually.")
+        warn("Version not supplied! Replace the title placeholder manually.")
     if date is None:
         date = time.strftime(C.DATE_FORMAT)
 
@@ -160,7 +160,6 @@ def collect(version=None, date=None, delete=False, skip_on_error=False, issue_co
         
     res = "\n".join(res).strip()+"\n"
 
-    error = False
     if out is None and prepend is None and append is None and insert is None:
         print(res)
     else:
@@ -170,8 +169,7 @@ def collect(version=None, date=None, delete=False, skip_on_error=False, issue_co
                 with open(out,"w") as fp:
                     fp.write(res)
             except Exception as e:
-                eprint(f"ERROR: Could not write file {out}: {e}")
-                error = True
+                error(f"Could not write file {out}: {e}")
             else:
                 eprint(f"Wrote to {out}")
         if not prepend is None:
@@ -180,15 +178,13 @@ def collect(version=None, date=None, delete=False, skip_on_error=False, issue_co
                 with open(prepend,"r") as fp:
                     txt = fp.read()
             except Exception as e:
-                eprint(f"ERROR: Could not read file {prepend}: {e}")
-                error = True
+                error(f"Could not read file {prepend}: {e}")
             else:
                 try:
                     with open(prepend,"w") as fp:
                         fp.write(res+"\n"+txt)
                 except Exception as e:
-                    eprint(f"ERROR: Could not write file {prepend}: {e}")
-                    error = True
+                    error(f"Could not write file {prepend}: {e}")
                 else:
                     eprint(f"Prepended to {prepend}")
         if not append is None:
@@ -197,15 +193,13 @@ def collect(version=None, date=None, delete=False, skip_on_error=False, issue_co
                 with open(append,"r") as fp:
                     txt = fp.read()
             except:
-                eprint(f"ERROR: Could not read file {append}: {e}")
-                error = True
+                error(f"Could not read file {append}: {e}")
             else:
                 try:
                     with open(append,"w") as fp:
                         fp.write(txt+"\n"+res)
                 except Exception as e:
-                    eprint(f"ERROR: Could not write file {append}: {e}")
-                    error = True
+                    error(f"Could not write file {append}: {e}")
                 else:
                     eprint(f"Appended to {append}")
         if not insert is None:
@@ -214,8 +208,7 @@ def collect(version=None, date=None, delete=False, skip_on_error=False, issue_co
                 with open(insert,"r") as fp:
                     txt = fp.read()
             except:
-                eprint(f"ERROR: Could not read file {insert}: {e}")
-                error = True
+                error(f"Could not read file {insert}: {e}")
             else:
                 m = re.search(C.INSERT_BEFORE_PATTERN,txt,re.MULTILINE)
                 if m:
@@ -226,17 +219,15 @@ def collect(version=None, date=None, delete=False, skip_on_error=False, issue_co
                         with open(insert,"w") as fp:
                             fp.write(txt)
                     except Exception as e:
-                        eprint(f"ERROR: Could not write file {insert}: {e}")
-                        error = True
+                        error(f"Could not write file {insert}: {e}")
                     else:
                         eprint(f"Inserted into {insert}")
                 else:
-                    eprint("ERROR: Could not find insertion point")
-                    error = True
+                    error("Could not find insertion point")
 
     # delete only entries that were actually used and only if writing output was successful
     if delete:
-        if error:
+        if has_failed():
             eprint("Errors detected; not deleting entries")
         else:
             for fname in success:
@@ -258,25 +249,21 @@ def check(paths = None, all=False):
         else:
             eprint("No entries to check")
 
-    error = False
     for path in paths:
         eprint(f"Checking {path}")
 
         entry = Entry.open(path)
         if entry is None:
-            error = True
             continue
 
         if not entry.issues:
-            eprint("WARN: no linked issues")
+            warn("no linked issues")
             
-    if error:
+    if has_failed():
         exit(1)
 
 
 def clean(delete = False):
-    error = False
-    
     entries = get_entries()
 
     if delete:
@@ -284,15 +271,14 @@ def clean(delete = False):
             try:
                 os.remove(os.path.join(ENTRY_DIR,fname))
             except Exception as e:
-                eprint(f"ERROR: Error deleting entry {fname}: {e}")
-                error = True
+                error(f"Error deleting entry {fname}: {e}")
             else:
                 eprint(f"Deleted {fname}")
     elif entries:
-        eprint("ERROR: There are still entries left; to delete them, use the --delete flag.")
+        error("There are still entries left; to delete them, use the --delete flag.")
         exit(1)
 
-    if error:
+    if has_failed():
         exit(1)
         
     eprint("All clean!")
@@ -333,11 +319,11 @@ def github_list(post_issues=False, post_prs=False, per_entry=False, include_titl
         issues=set()
         prs=set()
         if post_issues:
-            for d in data.values:
+            for d in data.values():
                 for i in d["issues"]:
                     issues.add(i)
         if post_prs:
-            for d in data.values:
+            for d in data.values():
                 for p in d["prs"]:
                     prs.add(p)
 
@@ -359,7 +345,7 @@ def github_msg(post_issues=False, post_prs=False, version=None, out=None, exec_c
             if post_prs:
                 C.GH_PR_MESSAGE.format()
         except KeyError as e:
-            eprint(f"ERROR: Failed to render GitHub message (please provide the version number!): {repr(e)}")
+            error(f"Failed to render GitHub message (please provide the version number!): {repr(e)}")
             exit(1)
 
     data = map_entries(lambda fname,entry: github_get(fname,entry,get_issues=post_issues,get_prs=post_prs))
@@ -368,7 +354,7 @@ def github_msg(post_issues=False, post_prs=False, version=None, out=None, exec_c
     issues = []
     if post_issues:
         issues=set()
-        for d in data.values:
+        for d in data.values():
             for i in d["issues"]:
                 issues.add(i)
         issues=sorted(list(issues))
@@ -377,7 +363,7 @@ def github_msg(post_issues=False, post_prs=False, version=None, out=None, exec_c
     prs = []
     if post_prs:
         prs = set()
-        for d in data.values:
+        for d in data.values():
             for p in d["prs"]:
                 prs.add(p)
         prs = sorted(list(prs))
@@ -412,20 +398,18 @@ def github_msg(post_issues=False, post_prs=False, version=None, out=None, exec_c
             with open(out,"w") as fp:
                 fp.write(res)
         except Exception as e:
-            eprint(f"ERROR: Failed to write {out}: {e}")
-            error = True
+            error(f"Failed to write {out}: {e}")
 
     # execute commands
     if exec_commands:
-        if error:
+        if has_failed():
             eprint("Errors detected; not executing commands")
         else:
             for cmd in commands:
                 if z:= os.system(cmd):
-                    eprint(f"ERROR: Exit code {z} for command {cmd}")
-                    error = True
+                    error(f"Exit code {z} for command {cmd}")
         
-    if error:
+    if has_failed():
         exit(1)
 
 
@@ -460,5 +444,5 @@ def init():
             with open(GITKEEP,"w") as fp:
                 fp.write("")
     except Exception as e:
-        eprint(f"ERROR: Failed to create directories/files: {e}")
+        error(f"Failed to create directories/files: {e}")
         exit(1)

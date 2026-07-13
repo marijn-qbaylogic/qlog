@@ -37,7 +37,7 @@ class Config:
             with open(CONFIG_FILE,"r") as fp:
                 CONFIG = yaml.load(fp,yaml.Loader)
         except Exception as e:
-            eprint(f"ERROR: Could not open config file {CONFIG_FILE} (consider running 'changelog init'): {e}")
+            error(f"Could not open config file {CONFIG_FILE} (consider running 'changelog init'): {e}")
             self.config_found = False
         else:
             self.config_found = True
@@ -47,20 +47,20 @@ class Config:
                     v = CONFIG[k]
                 except:
                     if d is None:
-                        eprint(f"ERROR: Could not find key '{k}'")
+                        error(f"Could not find key '{k}'")
                         exit(1)
                     return d
                 
                 try:
                     v+""
                 except:
-                    eprint(f"ERROR: Value for '{k}' must be string")
+                    error(f"Value for '{k}' must be string")
                     exit(1)
                     
                 try:
                     v.format(**{v:"" for v in vars})
                 except Exception as e:
-                    eprint(f"ERROR: Value for '{k}' could not be formatted using {vars}: {e}")
+                    error(f"Value for '{k}' could not be formatted using {vars}: {e}")
                     exit(1)
 
                 return v
@@ -68,7 +68,7 @@ class Config:
             def get_typed(d,k,dflt,t):
                 x = d.get(k,dflt)
                 if type(x)!=t:
-                    eprint(f"ERROR: Key '{k}' must be of type {t}")
+                    error(f"Key '{k}' must be of type {t}")
                     exit(1)
                 return x
 
@@ -83,7 +83,7 @@ class Config:
             self.GH_ISSUE_MESSAGE = key("gh_issue_message","project","version",d="We've released [v{version}](https://github.com/{project}/releases/tag/v{version}), which includes a fix for this issue.") # version, project
             self.GH_PR_MESSAGE    = key("gh_pr_message"   ,"project","version",d="We've released [v{version}](https://github.com/{project}/releases/tag/v{version}), which includes this PR.") # version, project
 
-            self.GH_ISSUE_TITLE_CMD = key("gh_issue_title_cmd","issue",d="""gh issue view {issue} --json title,url -q 'if .url | contains("pull") then error("[PR] "+.title) else .title end'""") # issue
+            self.GH_ISSUE_TITLE_CMD = key("gh_issue_title_cmd","issue",d="""gh issue view {issue} --json title,url -q 'if .url | contains("pull") then "[PR] "+.title else .title end'""") # issue
 
             self.GH_ISSUE_CMD = key("gh_issue_cmd","issue","issue_url","message_string",d="gh issue comment {issue_url} -b {message_string}") # issue, issue_url, message_string
             self.GH_PR_CMD    = key("gh_pr_cmd"   ,"pr"   ,"pr_url"   ,"message_string",d="gh pr comment {pr_url} -b {message_string}") # pr, pr_url, message_string
@@ -100,10 +100,10 @@ class Config:
                     "REMOVED":      dict(title="Removed"    ,rank= 5,itemize=True),
                 }
             else:
-                assertt(typeof(dc)==dict,"ERROR: 'default_cats' must be a dictionary")
+                assertt(typeof(dc)==dict,"'default_cats' must be a dictionary")
                 self.DEFAULT_CATS = {}
                 for cat in dc.keys():
-                    assertt(typeof(dc[cat])==dict,f"ERROR: default category '{cat}' must be a dictionary")
+                    assertt(typeof(dc[cat])==dict,f"default category '{cat}' must be a dictionary")
                     self.DEFAULT_CATS[clean_string(cat)] = dict(
                         title  =get_typed(dc[cat],"title"  ,cat  ,str),
                         rank   =get_typed(dc[cat],"rank"   ,100  ,int),
@@ -114,7 +114,7 @@ class Config:
 
             self.DEFAULT_CAT = key("default_cat",d="HIGHLIGHT")
             if not self.DEFAULT_CAT in self.DEFAULT_CATS.keys():
-                eprint(f"ERROR: Default category {self.DEFAULT_CAT} does not exist.")
+                error(f"Default category {self.DEFAULT_CAT} does not exist.")
                 exit(1)
 
             self.TIME_FORMAT = key("time_format",d="%Y-%m-%d_T%H:%M:%S") # use standard strftime parameters

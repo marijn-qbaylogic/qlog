@@ -7,6 +7,30 @@ import subprocess
 
 WORKING_DIR = os.getcwd()
 
+
+# error handling
+ERROR = False
+
+def error(msg = None):
+    global ERROR
+    ERROR = True
+
+    if msg:
+        eprint(f"ERROR: {msg}")
+
+def warn(msg):
+    eprint(f"WARN: {msg}")
+
+def has_failed():
+    return ERROR
+
+# custom assert
+def assertt(cond,msg):
+    if not cond:
+        error(msg)
+        exit(1)
+
+
 # print to stderr
 def eprint(*args, **kwargs):
     print(*args, **kwargs, file=sys.stderr)
@@ -22,11 +46,7 @@ def clean_string(s):
                      .replace("\n","_")
                   ).strip("_").replace("__","_").replace("__","_")
 
-# custom assert
-def assertt(cond,msg):
-    if not cond:
-        eprint(msg)
-        exit(1)
+
 
 # indent with a leading dash and no spaces on newlines, and no trailing newline
 def item(b):

@@ -18,7 +18,7 @@ class Entry:
             with open(path,"r") as fp:
                 entry_text = fp.read()
         except:
-            eprint(f"ERROR: Could not read file {path}")
+            error(f"Could not read file {path}")
             return
 
         # split into metadata and contents
@@ -27,7 +27,7 @@ class Entry:
             meta = m.group(1)
             contents = m.group(2)
         except Exception as e:
-            eprint(f"ERROR: Could not find metadata section in {path}: {e}")
+            error(f"Could not find metadata section in {path}: {e}")
             return
         
         # extract issues
@@ -46,7 +46,7 @@ class Entry:
                 case _:
                     raise Exception("Invalid metadata format")
         except Exception as e:
-            eprint(f"ERROR: {e} in {path}")
+            error(f"{e} in {path}")
             return
 
         return Entry(path, contents, issues)

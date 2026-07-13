@@ -80,7 +80,7 @@ class App:
         if not args.command in [None,"init"]:
             load_config()
             if not C.config_found:
-                eprint("ERROR: Cannot run command with missing configuration.")
+                error("Cannot run command with missing configuration.")
                 exit(1)
 
         match args.command:
