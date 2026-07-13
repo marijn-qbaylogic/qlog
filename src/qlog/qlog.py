@@ -433,7 +433,7 @@ def init():
         # make config
         if not os.path.exists(CONFIG_FILE):
             with open(CONFIG_FILE,"w") as fp:
-                fp.write(f"project: \"{project}\"")
+                fp.write(f"project: \"{project}\"\n")
 
         # add a .gitkeep file to the entries dir so it never removed by git
         GITKEEP = os.path.join(ENTRY_DIR,".gitkeep")
