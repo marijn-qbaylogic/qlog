@@ -348,7 +348,7 @@ def github_msg(post_issues=False, post_prs=False, version=None, out=None, exec_c
             error(f"Failed to render GitHub message (please provide the version number!): {repr(e)}")
             exit(1)
 
-    data = map_entries(lambda fname,entry: github_get(fname,entry,get_issues=post_issues,get_prs=post_prs))
+    data = map_entries(lambda fname,entry: github_get(fname,entry,get_issues=post_issues,get_prs=post_prs,get_titles=include_titles))
 
     # collect all issues
     issues = []
