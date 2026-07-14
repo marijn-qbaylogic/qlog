@@ -48,29 +48,25 @@ class Config:
                     v = CONFIG[k]
                 except:
                     if d is None:
-                        error(f"Could not find key '{k}'")
-                        exit(1)
+                        fatal(f"Could not find key '{k}'")
                     return d
                 
                 try:
                     v+""
                 except:
-                    error(f"Value for '{k}' must be string")
-                    exit(1)
+                    fatal(f"Value for '{k}' must be string")
                     
                 try:
                     v.format(**{v:"" for v in vars})
                 except Exception as e:
-                    error(f"Value for '{k}' could not be formatted using {vars}: {e}")
-                    exit(1)
+                    fatal(f"Value for '{k}' could not be formatted using {vars}: {e}")
 
                 return v
 
             def get_typed(d,k,dflt,t):
                 x = d.get(k,dflt)
                 if type(x)!=t:
-                    error(f"Key '{k}' must be of type {t}")
-                    exit(1)
+                    fatal(f"Key '{k}' must be of type {t}")
                 return x
 
             self.PROJECT = key("project")
@@ -85,7 +81,8 @@ class Config:
             self.GH_ISSUE_MESSAGE = key("gh_issue_message","project","version",d="We've released [v{version}](https://github.com/{project}/releases/tag/v{version}), which includes a fix for this issue.") # version, project
             self.GH_PR_MESSAGE    = key("gh_pr_message"   ,"project","version",d="We've released [v{version}](https://github.com/{project}/releases/tag/v{version}), which includes this PR.") # version, project
 
-            self.GH_ISSUE_TITLE_CMD = key("gh_issue_title_cmd","issue",d="""gh issue view {issue} --json title,url -q 'if .url | contains("pull") then "[PR] "+.title else .title end'""") # issue
+            self.GH_ISSUE_TITLE_CMD = key("gh_issue_title_cmd","issue","project",d="""gh issue view {issue} --json title,url -q 'if .url | contains("pull") then "PR "+.title else "ISSUE "+.title end'""") # issue, project
+            # self.GH_ISSUE_TITLE_CMD = key("gh_issue_title_cmd","issue","project",d="""curl --request GET --url "https://api.github.com/repos/{project}/issues/{issue}" --header "Accept: application/vnd.github+'json" | jq -r 'if .html_url | contains("pull") then "PR "+.title else "ISSUE "+.title end'""")
 
             self.GH_ISSUE_CMD = key("gh_issue_cmd","issue","issue_url","message_string",d="gh issue comment {issue_url} -b {message_string}") # issue, issue_url, message_string
             self.GH_PR_CMD    = key("gh_pr_cmd"   ,"pr"   ,"pr_url"   ,"message_string",d="gh pr comment {pr_url} -b {message_string}") # pr, pr_url, message_string
@@ -116,8 +113,7 @@ class Config:
 
             self.DEFAULT_CAT = key("default_cat",d="HIGHLIGHT")
             if not self.DEFAULT_CAT in self.DEFAULT_CATS.keys():
-                error(f"Default category {self.DEFAULT_CAT} does not exist.")
-                exit(1)
+                fatal(f"Default category {self.DEFAULT_CAT} does not exist.")
 
             self.TIME_FORMAT = key("time_format",d="%Y-%m-%d_T%H:%M:%S") # use standard strftime parameters
 
@@ -129,6 +125,8 @@ class Config:
             self.HEADER_FORMAT = key("cat_header_format","cat",d="### {cat}:") # cat
 
             self.INSERT_BEFORE_PATTERN = key("insert_before_pattern",d=r"^##[^#]")
+
+            smart_exit(False)
 
 
 C = Config()

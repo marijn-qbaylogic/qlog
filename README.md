@@ -174,3 +174,21 @@ This may be used to figure out who introduced a bad changelog entry,
 and punish them accordingly.
 
 Keep in mind that much trouble may be avoided by putting a `qlog check` in your CI.
+
+## GitHub access
+
+By default, `qlog` uses GitHub's CLI, which must be authenticated and is slower.
+Alternatively, `curl` may make things faster, but without authentication runs into
+rate limiting problems.
+
+The configurations for both can be found below:
+
+CLI (default):
+```yaml
+gh_issue_title_cmd: "gh issue view {issue} --json title,url -q 'if .url | contains(\"pull\") then \"PR \"+.title else \"ISSUE \"+.title end'"
+```
+
+CURL:
+```yaml
+gh_issue_title_cmd: "curl --request GET --url \"https://api.github.com/repos/{project}/issues/{issue}\" --header \"Accept: application/vnd.github+'json\" | jq -r 'if .html_url | contains(\"pull\") then \"PR \"+.title else \"ISSUE \"+.title end'"
+```

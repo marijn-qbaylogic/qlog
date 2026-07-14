@@ -41,10 +41,11 @@ def make_entry(title=None, issues=None, prs=None, cat=None, contents=None, inter
                     issues_ok = True
                     for i in issues_prs:
                         eprint(f"{i}: ",end="")
-                        (t,r) = get_issue_title(i)
+                        (t,ty) = get_issue_title(i)
                         issues_ok = issues_ok and r
-                        if t.startswith("[PR]"):
+                        if ty=="PR":
                             prs.append(i)
+                            t = "[PR] "+t
                         else:
                             issues.append(i)
                         eprint(t)
@@ -144,7 +145,7 @@ def collect(version=None, date=None, delete=False, skip_on_error=False, link_com
 
     if len(success)!=len(entry_files):
         if not skip_on_error:
-            exit(1)
+            fatal()
 
     # restore default names
     for cat in C.DEFAULT_CATS.keys():
@@ -269,9 +270,6 @@ def check(paths = None, all=False, types=False):
 
         if types:
             check_link_types(entry)
-            
-    if has_failed():
-        exit(1)
 
 
 def clean(delete = False):
@@ -287,10 +285,8 @@ def clean(delete = False):
                 eprint(f"Deleted {fname}")
     elif entries:
         error("There are still entries left; to delete them, use the --delete flag.")
-        exit(1)
 
-    if has_failed():
-        exit(1)
+    smart_exit(False)
         
     eprint("All clean!")
 
@@ -298,8 +294,8 @@ def clean(delete = False):
 
 def github_list(post_issues=False, post_prs=False, per_entry=False, include_titles=False):
     if not (post_issues or post_prs):
-        eprint("Please indicate whether to look at issues (-i) or PRs (-p)")
-        exit(1)
+        fatal("Please indicate whether to look at issues (-i) or PRs (-p)")
+    
     # only list pr/issue numbers that have been collected
 
     data = map_entries(lambda fname,entry: github_get(fname,entry,get_issues=post_issues,get_prs=post_prs,get_titles=include_titles))
@@ -345,8 +341,7 @@ def github_list(post_issues=False, post_prs=False, per_entry=False, include_titl
 
 def github_msg(post_issues=False, post_prs=False, version=None, out=None, exec_commands=False, include_titles=False):
     if not (post_issues or post_prs):
-        eprint("Please indicate whether to look at issues (-i) or PRs (-p)")
-        exit(1)
+        fatal("Please indicate whether to look at issues (-i) or PRs (-p)")
 
     # if the version is part of the message, make sure it's been supplied
     if version is None:
@@ -356,8 +351,7 @@ def github_msg(post_issues=False, post_prs=False, version=None, out=None, exec_c
             if post_prs:
                 C.GH_PR_MESSAGE.format()
         except KeyError as e:
-            error(f"Failed to render GitHub message (please provide the version number!): {repr(e)}")
-            exit(1)
+            fatal(f"Failed to render GitHub message (please provide the version number!): {repr(e)}")
 
     data = map_entries(lambda fname,entry: github_get(fname,entry,get_issues=post_issues,get_prs=post_prs,get_titles=include_titles))
 
@@ -419,9 +413,7 @@ def github_msg(post_issues=False, post_prs=False, version=None, out=None, exec_c
             for cmd in commands:
                 if z:= os.system(cmd):
                     error(f"Exit code {z} for command {cmd}")
-        
-    if has_failed():
-        exit(1)
+
 
 def github_blame(path):
     try:
@@ -471,6 +463,6 @@ def init():
         if not os.path.exists(GITKEEP):
             with open(GITKEEP,"w") as fp:
                 fp.write("")
+    
     except Exception as e:
-        error(f"Failed to create directories/files: {e}")
-        exit(1)
+        fatal(f"Failed to create directories/files: {e}")

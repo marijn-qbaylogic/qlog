@@ -85,8 +85,7 @@ class App:
         if not args.command in [None,"init"]:
             load_config()
             if not C.config_found:
-                error("Cannot run command with missing configuration.")
-                exit(1)
+                fatal("Cannot run command with missing configuration.")
 
         match args.command:
             case None:
@@ -147,6 +146,8 @@ class App:
                         )
             case "init":
                 init()
+        
+        smart_exit()
 
     def __call__(self):
         self.run()

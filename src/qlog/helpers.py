@@ -39,10 +39,16 @@ def pr_link(pr, include_title=False):
 
 def github_get(fname,entry,get_issues=False, get_prs=False,get_titles=False):
     res = {}
+    def mustbe(ty,ty2):
+        if ty==ty2:
+            return ""
+        error(f"{ty} listed as {ty2}")
+        return f"[{ty}] "
+
     if get_issues:
-        res["issues"] = [(i, get_issue_title(i)[0] if get_titles else None) for i in entry.issues]
+        res["issues"] = [(i, mustbe(get_issue_title(i)[1],"ISSUE") + get_issue_title(i)[0] if get_titles else None) for i in entry.issues]
     if get_prs:
-        res["prs"] = [(p, get_issue_title(p)[0] if get_titles else None) for p in entry.prs]
+        res["prs"] = [(p, mustbe(get_issue_title(i)[1],"PR") + get_issue_title(p)[0] if get_titles else None) for p in entry.prs]
     return res
 
 
@@ -56,12 +62,10 @@ def check_links(entry):
 def check_link_types(entry):
     for i in entry.issues:
         match get_issue_title(i):
-            case (title,True):
-                if title.startswith("[PR]"):
-                    error(f"Linked issues {i} is actually a PR")
+            case (title,"PR"):
+                error(f"Linked issues {i} is actually a PR")
 
     for p in entry.prs:
         match get_issue_title(p):
-            case (title,True):
-                if not title.startswith("[PR]"):
-                    error(f"Linked PR {p} is actually a normal issue")
+            case (title,"ISSUE"):
+                error(f"Linked PR {p} is actually a normal issue")

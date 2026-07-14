@@ -8,12 +8,15 @@ from .config import *
 
 @functools.lru_cache(maxsize=None)
 def get_issue_title(i):
-    result = subprocess.run(C.GH_ISSUE_TITLE_CMD.format(issue=i), shell=True, capture_output=True)
+    result = subprocess.run(C.GH_ISSUE_TITLE_CMD.format(issue=i, project=C.PROJECT), shell=True, capture_output=True)
     if result.returncode:
-        return (result.stderr.decode().strip(), False)
+        err = result.stderr.decode().strip()
+        error(err)
+        return (err, "ERROR")
     else:
         title = result.stdout.decode().strip()
-        return (title, True)
+        ty,title = title.split(maxsplit=1)
+        return (title, ty)
 
 @functools.lru_cache(maxsize=None)
 def get_pr(digest):

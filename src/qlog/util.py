@@ -18,17 +18,27 @@ def error(msg = None):
     if msg:
         eprint(f"ERROR: {msg}")
 
+def fatal(msg = None):
+    error(msg)
+    smart_exit(1)
+
 def warn(msg):
     eprint(f"WARN: {msg}")
 
 def has_failed():
     return ERROR
 
+def smart_exit(always=True):
+    if has_failed():
+        eprint("Program finished with errors")
+        exit(1)
+    if always:
+        exit(0)
+
 # custom assert
 def assertt(cond,msg):
     if not cond:
-        error(msg)
-        exit(1)
+        fatal(msg)
 
 
 # print to stderr
