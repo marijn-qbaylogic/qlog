@@ -16,7 +16,7 @@ from .entry import *
 from .github import *
 from .helpers import *
 
-def make_entry(title=None, issues=None, cat=None, contents=None, interactive=True):
+def make_entry(title=None, issues=None, prs=None, cat=None, contents=None, interactive=True):
     if title is None:
         title="<title>"
         if interactive:
@@ -32,14 +32,14 @@ def make_entry(title=None, issues=None, cat=None, contents=None, interactive=Tru
         if interactive:
             while True:
                 issues_prs = input("Related issues/PRs: ")
-                issues_prs = [int(i) for i in re.split(r"[\s,;]+",issues) if i.isnumeric()]
+                issues_prs = [int(i) for i in re.split(r"[\s,;]+",issues_prs) if i.isnumeric()]
                 eprint(f"Issues/PRs: {issues_prs}")
 
                 issues = []
                 prs = []
                 if issues_prs:
                     issues_ok = True
-                    for i in issues:
+                    for i in issues_prs:
                         eprint(f"{i}: ",end="")
                         (t,r) = get_issue_title(i)
                         issues_ok = issues_ok and r
@@ -58,6 +58,7 @@ def make_entry(title=None, issues=None, cat=None, contents=None, interactive=Tru
                 else:
                     if "y" in input("Are you absolutely sure you do not want to link any issues? [y/N]: ").lower():
                         break
+    no_links = "no-links: true\n" if not (issues or prs) else ""
 
     if cat is None:
         cat = "<category>"
@@ -108,7 +109,7 @@ def make_entry(title=None, issues=None, cat=None, contents=None, interactive=Tru
     fname = C.ENTRY_FILENAME_FORMAT.format(title=title,time=timestamp,cat=cat,issues=issues)
     
     with open(os.path.join(ENTRY_DIR,fname),"w") as fp:
-        fp.write(ENTRY_TEMPLATE.format(issues=issues,prs=prs,cat=cat,contents=contents))
+        fp.write(ENTRY_TEMPLATE.format(issues=issues,prs=prs,no_links=no_links, cat=cat,contents=contents))
         
     print(os.path.abspath(os.path.join(ENTRY_DIR,fname)))
 
@@ -244,7 +245,7 @@ def collect(version=None, date=None, delete=False, skip_on_error=False, link_com
     
 
 
-def check(paths = None, all=False):
+def check(paths = None, all=False, types=False):
     find_newest = not paths and not all
     if all or not paths:
         paths = [os.path.join(ENTRY_DIR,fname) for fname in get_entries()]
@@ -264,8 +265,10 @@ def check(paths = None, all=False):
         if entry is None:
             continue
 
-        if not entry.issues and not entry.prs:
-            warn("No linked issues/PRs")
+        check_links(entry)
+
+        if types:
+            check_link_types(entry)
             
     if has_failed():
         exit(1)
@@ -420,6 +423,23 @@ def github_msg(post_issues=False, post_prs=False, version=None, out=None, exec_c
     if has_failed():
         exit(1)
 
+def github_blame(path):
+    try:
+        result = subprocess.run(["git","blame","-l",path], check=True, capture_output=True)
+    except Exception as e:
+        error(f"Failed to blame {path}: {e}")
+    else:
+        prs = set()
+        blame_lines = result.stdout.splitlines()
+
+        for blame_line in blame_lines:
+            commit = blame_line.split()[0].decode()
+            if not (pr:=get_pr(commit)) is None:
+                prs.add(pr)
+
+        print("PRs:")
+        for pr in sorted(list(prs)):
+            print(f"  {pr}: {get_issue_title(pr)[0][5:]}")
 
 def init():
     try:

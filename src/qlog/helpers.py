@@ -42,19 +42,26 @@ def github_get(fname,entry,get_issues=False, get_prs=False,get_titles=False):
     if get_issues:
         res["issues"] = [(i, get_issue_title(i)[0] if get_titles else None) for i in entry.issues]
     if get_prs:
-        prs = set()
-
-        try:
-            result = subprocess.run(["git","blame","-l",os.path.join(ENTRY_DIR,fname)], check=True, capture_output=True)
-        except Exception as e:
-            error(f"Failed to blame entry {fname}: {e}")
-        else:
-            blame_lines = result.stdout.splitlines()
-
-            for blame_line in blame_lines:
-                commit = blame_line.split()[0].decode()
-                if not (pr:=get_pr(commit)) is None:
-                    prs.add((pr,get_issue_title(pr)[0] if get_titles else None))
-        res["prs"] = sorted(list(prs))
+        res["prs"] = [(p, get_issue_title(p)[0] if get_titles else None) for p in entry.prs]
     return res
-    
+
+
+def check_links(entry):
+    if bool(entry.issues or entry.prs) == entry.no_links:
+        if entry.no_links:
+            error("No links flag set while issues/PRs were linked")
+        else:
+            error("No issues/PRs linked without explicitly setting no-links flag")
+
+def check_link_types(entry):
+    for i in entry.issues:
+        match get_issue_title(i):
+            case (title,True):
+                if title.startswith("[PR]"):
+                    error(f"Linked issues {i} is actually a PR")
+
+    for p in entry.prs:
+        match get_issue_title(p):
+            case (title,True):
+                if not title.startswith("[PR]"):
+                    error(f"Linked PR {p} is actually a normal issue")

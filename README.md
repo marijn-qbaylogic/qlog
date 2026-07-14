@@ -18,6 +18,7 @@ After running `qlog init`, you can:
 Clone the repository. Then, in the root folder, run `pipx install . --force`.
 This command can be repeated to update the tool (after pulling from the
 repository).
+
 Alternatively, the tool can be installed via the nix flake. For example, you can
 add it to the default profile:
 
@@ -107,14 +108,16 @@ Any such header not in the list of categories is treated as a custom category.
 It is also possible to make a message appear in multiple categories by separating them with pipes
 (i.e. `# ADDED | CHANGED`), though it's generally better to just write multiple messages.
 
-Entering any text before the category header puts it in the `HIGHLIGHTS` category.
+Entering any text before the category header puts it in the `HIGHLIGHTS` category by default.
 
 
 ### Checking entries
 To check whether there are any issues with your entries, run `qlog check`.
 This will check the last edited entry by default. It's also possible to
-pass the path to an entry file, or check all entries with `-a`.
+pass the path to an entry file, or check all entries with `-a`/`-all`.
 
+Add `-t`/`--types` to check that the issues and PRs that have been linked,
+are actually issues and PRs.
 
 ## Combining changelog entries
 For a release, all entry files are combined into a single changelog.
@@ -164,3 +167,10 @@ with a specific tag including the version number (`v<version>`),
 which generally does not exist yet when the entry files are deleted
 (since this happens when creating the changelog, which is still part of the release process).
 It might be easier to go back to an earlier commit that still has the files.
+
+## Further capabilities
+`qlog gh blame` can be used to find the PRs that introduced a file.
+This may be used to figure out who introduced a bad changelog entry,
+and punish them accordingly.
+
+Keep in mind that much trouble may be avoided by putting a `qlog check` in your CI.

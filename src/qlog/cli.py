@@ -3,7 +3,7 @@ import argparse, pathlib
 
 from .util import *
 from .config import *
-from .qlog import make_entry, collect, check, clean, github_list, github_msg, init
+from .qlog import make_entry, collect, check, clean, github_list, github_msg, github_blame, init
 
 class App:
     def __init__(self):
@@ -29,6 +29,7 @@ class App:
         parser_entry = subparsers.add_parser("entry", help="create an entry", description=DESCRIPTION_ENTRY, formatter_class=argparse.RawTextHelpFormatter)
         parser_entry.add_argument("-t","--title"            , type=str                                  , help="title to use")
         parser_entry.add_argument("-i","--issue"            , type=int, nargs="+"                       , help="add issue number")
+        parser_entry.add_argument("-p","--pr"               , type=int, nargs="+"                       , help="add PR number")
         parser_entry.add_argument("-c","--cat"              , type=str                                  , help="entry category")
         parser_entry.add_argument("-C","--content"          , type=str                                  , help="entry content")
         parser_entry.add_argument("-I","--no-interactive"   , action="store_false", dest="interactive"  , help="do not run interactive script to fill in missing info")
@@ -48,27 +49,31 @@ class App:
         parser_check = subparsers.add_parser("check", help="check if an entry is correct", description="Check one or more entries for errors.")
         parser_check.add_argument("path"        , nargs="*", type=pathlib.Path  , help="entry to check; defaults to last edited")
         parser_check.add_argument("-a","--all"  , action="store_true"           , help="check all entries")
+        parser_check.add_argument("-t","--types", action="store_true"           , help="check with GitHub that issues are issues and PRs are PRs (slow)")
 
         parser_clean = subparsers.add_parser("clean", help="clean up entries, or check all entries have been collected", description="Make sure all entries have been removed." )
         parser_clean.add_argument("-D","--delete", action="store_true", help="delete remaining entries; if this flag is not specified, the program will error if any entries are left")
 
         parser_github = subparsers.add_parser("gh", help="post release messages on GitHub", description="Generate GitHub CLI commands to post to all issues combined in this changelog.")
         subparsers_github = parser_github.add_subparsers(dest="subcommand")
-        parser_github_list = subparsers_github.add_parser("list", help="list issues and PRs", description="List issues and PRs involved in the changelog")
+
         parser_github_msg = subparsers_github.add_parser("msg", help="post release messages", description="Generate GitHub CLI commands to post to issues/PRs involved in the changelog")
-        
         parser_github_msg.add_argument("-i","--issues"  , action="store_true"   , help="send messages to issues")
         parser_github_msg.add_argument("-p","--prs"     , action="store_true"   , help="send messages to PRs")
-        parser_github_msg.add_argument("-t","--titles"  , action="store_true"   , help="print issue/pr titles")
+        parser_github_msg.add_argument("-t","--titles"  , action="store_true"   , help="print issue/pr titles (slow)")
         parser_github_msg.add_argument("-v","--version" , type=str              , help="a version to use in the message")
         parser_github_msg.add_argument("-o","--out"     , type=pathlib.Path     , help="output commands to file")
         parser_github_msg.add_argument("-x","--exec"    , action="store_true"   , help="execute generated commands; fails if version is not specified but required for messages")
 
+        parser_github_list = subparsers_github.add_parser("list", help="list issues and PRs", description="List issues and PRs involved in the changelog")
         parser_github_list.add_argument("-i","--issues"  , action="store_true"   , help="send messages to issues")
         parser_github_list.add_argument("-p","--prs"     , action="store_true"   , help="send messages to PRs")
         parser_github_list.add_argument("-t","--titles"  , action="store_true"   , help="print issue/pr titles")
         parser_github_list.add_argument("-e","--per-entry",action="store_true"   , help="print results per entry")
-        
+
+        parser_github_blame = subparsers_github.add_parser("blame", help="find source PRs", description="Find the PR(s) responsible for introducing a (changelog entry) file")
+        parser_github_blame.add_argument("path", type=pathlib.Path, help="the entry file to blame")
+
         parser_init = subparsers.add_parser("init", help="initialise the right directories; does nothing to existing files")
 
         self.parser = parser
@@ -90,6 +95,7 @@ class App:
                 make_entry(
                     title = args.title,
                     issues = args.issue,
+                    prs = args.pr,
                     cat = args.cat,
                     contents = args.content,
                     interactive = args.interactive,
@@ -109,6 +115,7 @@ class App:
                 check(
                     paths = args.path,
                     all = args.all,
+                    types = args.types,
                 )
             case "clean":
                 clean(
@@ -133,6 +140,10 @@ class App:
                             version = args.version,
                             out = args.out,
                             exec_commands = args.exec,
+                        )
+                    case "blame":
+                        github_blame(
+                            path = args.path
                         )
             case "init":
                 init()

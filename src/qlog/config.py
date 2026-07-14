@@ -20,11 +20,11 @@ ENTRY_TEMPLATE = """
 ---
 issues: {issues}
 prs: {prs}
----
+{no_links}---
 
 # {cat}
 {contents}
-""".lstrip() # util, cat, contents
+""".lstrip() # issues, prs, no_links, cat, contents
 
 
 class Config:

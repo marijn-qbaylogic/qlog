@@ -5,11 +5,12 @@ from .util import *
 from .config import *
 
 class Entry:
-    def __init__(self, path, contents, issues, prs):
+    def __init__(self, path, contents, issues, prs, no_links = False):
         self.path = path
         self.contents = contents
         self.issues = issues
         self.prs = prs
+        self.no_links = no_links
 
     # open entry and return Entry if successful
     @staticmethod
@@ -64,11 +65,18 @@ class Entry:
                     raise Exception("Invalid pr list")
                 case _:
                     prs = []
+            
+            # explicitly no links  
+            match header:
+                case {"no-links": bool() as no_links,**rest}:
+                    no_links = no_links
+                case _:
+                    no_links = False
         except Exception as e:
             error(f"{e} in {path}")
             return
 
-        return Entry(path, contents, issues, prs)
+        return Entry(path, contents, issues, prs, no_links)
 
     def parse(self,link_comments=False):
         links = " ".join([issue_link(C,issue,include_title=link_comments) for issue in self.issues] + 
