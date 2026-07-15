@@ -42,7 +42,7 @@ def make_entry(title=None, issues=None, prs=None, cat=None, contents=None, inter
                     for i in issues_prs:
                         eprint(f"{i}: ",end="")
                         (t,ty) = get_issue_title(i)
-                        issues_ok = issues_ok and r
+                        issues_ok = issues_ok and ty!="ERROR"
                         if ty=="PR":
                             prs.append(i)
                             t = "[PR] "+t
