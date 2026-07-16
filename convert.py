@@ -3,6 +3,7 @@
 import sys
 import re
 import os
+import subprocess
 import argparse
 
 parser = argparse.ArgumentParser(prog="convert.py", description="Convert old changelog entries to new format.", formatter_class=argparse.RawTextHelpFormatter)
