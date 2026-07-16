@@ -43,13 +43,6 @@ for file in files:
         cat,text = m.groups()
     else:
         cat = None
-    
-    if m:=re.match(r"(.*?)( See| Fixes)? \[#(\d+)\]\(.*\)\.?$",text,re.DOTALL):
-        text,_,issue = m.groups()
-    else:
-        issue = None
-    
-    text=text.strip()
 
     try:
         result = subprocess.run(["qlog","gh","blame",file], check=True, capture_output=True)
@@ -58,6 +51,19 @@ for file in files:
         prs = []
     else:
         prs = [int(line.decode().strip().split(":")[0]) for line in result.stdout.splitlines()[1:]]
+
+    if m:=re.match(r"(.*?)( See| Fixes)? \[#(\d+)\]\((.*)\)\.?$",text,re.DOTALL):
+        text,_,issue,url = m.groups()
+        if "pull" in url:
+            pr = int(issue)
+            if not pr in prs:
+                prs.append(pr)
+
+            issue = None
+    else:
+        issue = None
+    
+    text=text.strip()
 
     print(f"""{WHITE}Category: {YELLOW}{cat}
 {WHITE}Issue: {YELLOW}{issue}
