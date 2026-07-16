@@ -34,22 +34,32 @@ for file in files:
     print(file)
     with open(file,"r") as fp:
         text = fp.read()
-    print(RED+text.strip())
+    text=text.strip()
+
+    print(RED+text)
 
     if m:=re.match(r"([A-Z]+):\s*(.*)",text,re.DOTALL):
         cat,text = m.groups()
     else:
         cat = None
     
-    if m:=re.match(r"(.*?)( See| Fixes)? \[#(\d+)\]\(.*\)\.?",text,re.DOTALL):
+    if m:=re.match(r"(.*?)( See| Fixes)? \[#(\d+)\]\(.*\)\.?$",text,re.DOTALL):
         text,_,issue = m.groups()
     else:
         issue = None
     
     text=text.strip()
 
+    try:
+        result = subprocess.run(["qlog","gh","blame",path], check=True, capture_output=True)
+    except Exception as e:
+        pass
+    else:
+        prs = [int(line.strip().split(":")[0]) for line in result.stdout.splitlines()[1:]]
+
     print(f"""{WHITE}Category: {YELLOW}{cat}
 {WHITE}Issue: {YELLOW}{issue}
+{WHITE}PRs: {prs}
 {WHITE}Content:
 {YELLOW}{text.strip()}
 """)
@@ -58,6 +68,7 @@ for file in files:
 
     output = f"""---
 issues: [{issue}]
+prs: {prs}
 ---
 
 # {cat}
@@ -70,7 +81,10 @@ issues: [{issue}]
         os.remove(file)
 
     if SAVE:
-        with open(os.path.join("changelog/entries",os.path.basename(file)),"w") as fp:
+        file = os.path.basename(file)
+        if not file.endswith(".md"):
+            file+=".md"
+        with open(os.path.join("changelog/entries",file),"w") as fp:
             fp.write(output)
 
 
