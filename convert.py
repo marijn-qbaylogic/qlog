@@ -53,7 +53,8 @@ for file in files:
     try:
         result = subprocess.run(["qlog","gh","blame",path], check=True, capture_output=True)
     except Exception as e:
-        pass
+        print(WHITE+"Error fetching PRs:",RED+str(e))
+        prs = []
     else:
         prs = [int(line.strip().split(":")[0]) for line in result.stdout.splitlines()[1:]]
 
