@@ -57,7 +57,7 @@ for file in files:
         print(WHITE+"Error fetching PRs:",RED+str(e))
         prs = []
     else:
-        prs = [int(line.strip().split(":")[0]) for line in result.stdout.splitlines()[1:]]
+        prs = [int(line.decode().strip().split(":")[0]) for line in result.stdout.splitlines()[1:]]
 
     print(f"""{WHITE}Category: {YELLOW}{cat}
 {WHITE}Issue: {YELLOW}{issue}
