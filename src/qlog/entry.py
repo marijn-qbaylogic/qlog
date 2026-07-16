@@ -79,8 +79,9 @@ class Entry:
         return Entry(path, contents, issues, prs, no_links)
 
     def parse(self,link_comments=False):
-        links = " ".join([issue_link(C,issue,include_title=link_comments) for issue in self.issues] + 
-                         [pr_link(C,pr,include_title=link_comments) for pr in self.prs])
+        from .helpers import issue_link, pr_link
+        links = " ".join([issue_link(issue,include_title=link_comments) for issue in self.issues] + 
+                         [pr_link(pr,include_title=link_comments) for pr in self.prs])
 
         # split into sections
         
