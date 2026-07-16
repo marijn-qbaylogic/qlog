@@ -416,6 +416,8 @@ def github_msg(post_issues=False, post_prs=False, version=None, out=None, exec_c
 
 
 def github_blame(path):
+    os.chdir(WORKING_DIR)
+    
     try:
         result = subprocess.run(["git","blame","-l",path], check=True, capture_output=True)
     except Exception as e:
