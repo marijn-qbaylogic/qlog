@@ -52,7 +52,7 @@ for file in files:
     text=text.strip()
 
     try:
-        result = subprocess.run(["qlog","gh","blame",path], check=True, capture_output=True)
+        result = subprocess.run(["qlog","gh","blame",file], check=True, capture_output=True)
     except Exception as e:
         print(WHITE+"Error fetching PRs:",RED+str(e))
         prs = []
